@@ -1,0 +1,301 @@
+:root {
+    --bg-color: #e0e0e0;
+    --paper-color: #ffffff;
+    --text-color: #333;
+    --accent-color: #4a90e2;
+    --border-color: #ccc;
+    --input-underline: #999;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Times New Roman', Times, serif;
+    /* Match standard document font */
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    height: 100vh;
+    overflow: hidden;
+    /* Prevent body scroll, handle in containers */
+}
+
+.main-container {
+    display: flex;
+    height: 95vh;
+    gap: 20px;
+}
+
+/* --- Left: Document View --- */
+.document-pane {
+    flex: 3;
+    background-color: var(--paper-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+    /* UI elements in sans-serif */
+}
+
+.app-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #444;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: #666;
+    align-items: center;
+}
+
+.control-item {
+    cursor: pointer;
+}
+
+.control-item:hover {
+    color: var(--accent-color);
+}
+
+.mic-active {
+    color: red;
+    font-weight: bold;
+}
+
+/* --- Form Styles --- */
+.patho-form {
+    font-size: 1.1rem;
+    line-height: 2;
+}
+
+.form-header {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.form-title {
+    text-align: center;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.form-row {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.inline-input {
+    border: none;
+    border-bottom: 1px solid var(--input-underline);
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: center;
+    background: transparent;
+    padding: 0 5px;
+    min-width: 30px;
+}
+
+.inline-input:focus {
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.checkbox-visual {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #333;
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: middle;
+    cursor: pointer;
+    position: relative;
+    background: white;
+}
+
+/* Custom Checkbox Logic */
+input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+    /* display: none; - Removed to allow focus */
+}
+
+input[type="checkbox"]:checked+.checkbox-visual::after {
+    content: '✓';
+    position: absolute;
+    top: -4px;
+    left: 1px;
+    font-size: 16px;
+    color: red;
+    /* Match the red tick in the image/PDF */
+    font-weight: bold;
+}
+
+.circle-option {
+    border: 1px solid transparent;
+    padding: 0 4px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.circle-option.selected {
+    border-color: red;
+    color: red;
+}
+
+input[type="radio"] {
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+    /* display: none; - Removed to allow focus */
+}
+
+/* Unified circle styling for both radio and checkbox in circle-option context */
+.circle-option input[type="radio"]:checked+span,
+.circle-option input[type="checkbox"]:checked+span {
+    border: 1px solid red;
+    border-radius: 50%;
+    padding: 0 4px;
+    color: red;
+}
+
+
+/* --- Right: Camera & Tools --- */
+.side-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.camera-feed {
+    background-color: #000;
+    height: 360px;
+    /* Increased height for 4:3 aspect ratio */
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input_video {
+    display: none;
+}
+
+.output_canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
+.camera-overlay-text {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 5px;
+    z-index: 2;
+}
+
+.gesture-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    /* 4 Rows */
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.gesture-box {
+    background: transparent;
+    /* Transparent background */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Thin grid lines */
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Center text */
+    text-shadow: 1px 1px 3px black;
+    /* Ensure text is readable over video */
+    cursor: pointer;
+    transition: background 0.2s;
+    pointer-events: auto;
+}
+
+.gesture-box:hover,
+.gesture-box.active {
+    background: rgba(255, 255, 255, 0.1);
+    /* Slight highlight on hover/active */
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.gesture-box.active {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+/* Focused element style for Gesture Navigation */
+.gesture-focus {
+    border: 3px solid #e74c3c !important;
+    /* Bright Red */
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+    background-color: rgba(231, 76, 60, 0.1);
+    transition: all 0.2s;
+}
+
+.file-upload-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btn-generate {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+.btn-generate:hover {
+    background-color: #357abd;
+}

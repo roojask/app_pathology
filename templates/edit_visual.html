@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Visual Pathology Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='generated_styles.css') }}?v={{ range(1, 10000) | random }}">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            padding: 0;
+            margin: 0;
+            font-family: 'Sarabun', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SPLIT VIEW CONTAINER */
+        .split-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* LEFT PANE: Editor (Scrollable) */
+        .sidebar-pane {
+            flex: 0 0 380px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #ddd;
+        }
+
+        /* RIGHT PANE: Editor (Scrollable) */
+        .main-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            background: #e9ecef;
+            display: flex;
+            justify-content: center;
+        }
+
+        .editor-wrapper {
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        .editor-container {
+            position: relative;
+            width: 1224px;
+            height: 1584px;
+            background-image: url("{{ url_for('static', filename='template_bg.png') }}");
+            background-size: cover;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            transform: scale(0.9);
+            transform-origin: top center;
+        }
+
+        .field {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: blue;
+            padding: 2px 5px;
+        }
+
+        .field:focus {
+            background: white;
+            border-color: blue;
+            outline: none;
+        }
+
+        .field-checkbox {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            opacity: 1;
+            border: 2px solid blue;
+            accent-color: blue;
+        }
+
+        .field-radio {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            opacity: 1;
+            border: 2px solid blue;
+            border-radius: 50%;
+            accent-color: blue;
+        }
+
+        .field-word-circle {
+            position: absolute;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .field-word-circle:checked {
+            border: 2px solid red;
+            border-radius: 50%;
+        }
+
+        .field,
+        .field-checkbox,
+        .field-radio,
+        .field-word-circle {
+            z-index: 100;
+        }
+
+        .text-only-field {
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            border-bottom: 1px dotted blue;
+        }
+
+        /* Transcription Box */
+        .transcription-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #495057;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="split-container">
+        <!-- LEFT SIDEBAR: Upload, Actions, Transcription -->
+        <div class="sidebar-pane">
+
+            <!-- Header -->
+            <h4 class="mb-4 text-primary fw-bold" style="display: flex; align-items: center; gap: 10px;">
+                <span>🏥</span> Patho Report
+            </h4>
+
+            <!-- 1. Upload Form -->
+            <div class="mb-4">
+                <h6 class="text-uppercase text-muted small fw-bold mb-2">1. Upload Dictation</h6>
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <div class="input-group mb-2">
+                        <input type="file" class="form-control" name="audio_file" accept=".wav,.mp3,.m4a" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        🎙 Transcribe & Start
+                    </button>
+                </form>
+            </div>
+
+            <hr class="my-3">
+
+            <!-- 2. Actions -->
+            <div class="mb-4">
+                <h6 class="text-uppercase text-muted small fw-bold mb-2">2. Editor Actions</h6>
+                <!-- This button triggers the form in the main pane -->
+                <button type="submit" form="editorForm" class="btn btn-success w-100 mb-2 py-2 fw-bold">
+                    {% if pdf_filename %}🔄 Update PDF Report{% else %}💾 Generate PDF Report{% endif %}
+                </button>
+                <a href="/" class="btn btn-outline-secondary w-100 btn-sm">Reset Form</a>
+            </div>
+
+            {% if pdf_filename %}
+            <div class="alert alert-success p-2 text-center mb-4">
+                <div class="fw-bold mb-2">✅ Report Generated!</div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('download_file', filename=pdf_filename) }}" target="_blank"
+                        class="btn btn-outline-success btn-sm">
+                        👁 View PDF
+                    </a>
+                    <a href="{{ url_for('download_file', filename=pdf_filename) }}" download
+                        class="btn btn-dark btn-sm">
+                        ⬇ Download PDF
+                    </a>
+                    {% if docx_filename %}
+                    <a href="{{ url_for('download_file', filename=docx_filename) }}" download
+                        class="btn btn-primary btn-sm">
+                        📄 Download DOCX (Word)
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 3. Transcription -->
+            <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+                <h6 class="text-uppercase text-muted small fw-bold mb-0">📝 Transcription</h6>
+                <div class="transcription-box">
+                    {{ transcription if transcription else "Upload a file to see transcription here..." }}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT MAIN PANE: Editor -->
+        <div class="main-pane">
+            {% if transcription %}
+            <div class="editor-wrapper">
+                <form id="editorForm" action="/generate" method="post">
+                    <input type="hidden" name="transcription" value="{{ transcription }}">
+
+                    <div class="editor-container">
+
+                        <!-- 1. Surgical Number -->
+                        <input type="text" class="field s1-surgical" name="s0_surgical_no"
+                            value="{{ data.get('s0_surgical_no', '') }}">
+
+                        <!-- 1.5 Side (Right/Left) -->
+                        <input type="radio" class="field-word-circle s1-right" name="s1_side" value="right" {% if
+                            data.get('s1_side')=='right' %}checked{% endif %}>
+                        <input type="radio" class="field-word-circle s1-left" name="s1_side" value="left" {% if
+                            data.get('s1_side')=='left' %}checked{% endif %}>
+
+                        <!-- 9. Nipple -->
+                        <!-- 9. Nipple -->
+                        <input type="checkbox" class="field-checkbox s9-everted" name="s9_val" value="everted" {%
+                            if 'everted' in data.get('s9_val', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-checkbox s9-inverted" name="s9_val" value="inverted" {%
+                            if 'inverted' in data.get('s9_val', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-checkbox s9-ulc" name="s9_val" value="ulceration" {%
+                            if 'ulceration' in data.get('s9_val', []) %}checked{% endif %}>
+                        <input type="text" class="field s9-ulc-text" name="s9_ulc_text"
+                            value="{{ data.get('s9_ulc_text', '') }}">
+
+                        <!-- 3. Procedure -->
+                        <input type="radio" class="field-radio s3-check" name="s2_proc" value="modified" {% if
+                            data.get('s2_proc')=='modified' %}checked{% endif %}>
+                        <input type="radio" class="field-radio s3-simple" name="s2_proc" value="simple" {% if
+                            data.get('s2_proc')=='simple' %}checked{% endif %}>
+
+                        <!-- Procedure Other -->
+                        <input type="radio" class="field-radio s3-other-check" name="s2_proc" value="other" {% if
+                            data.get('s2_proc')=='other' %}checked{% endif %}>
+                        <input type="text" class="field text-only-field s3-other-text" name="s2_other_text"
+                            value="{{ data.get('s2_other_text', '') }}">
+
+                        <!-- 3.1 Measuring -->
+                        <input type="text" class="field s3-dim-0" name="s3_dims_0"
+                            value="{{ data.get('s3_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s3-dim-1" name="s3_dims_1"
+                            value="{{ data.get('s3_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s3-dim-2" name="s3_dims_2"
+                            value="{{ data.get('s3_dims', ['','',''])[2] }}">
+
+                        <!-- 4. Axillary -->
+                        <input type="checkbox" class="field-checkbox s4-check" name="s4_check" {% if
+                            data.get('s4_check') %}checked{% endif %}>
+                        <input type="text" class="field s4-dim-0" name="s4_dims_0"
+                            value="{{ data.get('s4_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s4-dim-1" name="s4_dims_1"
+                            value="{{ data.get('s4_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s4-dim-2" name="s4_dims_2"
+                            value="{{ data.get('s4_dims', ['','',''])[2] }}">
+
+                        <!-- 5. Skin Ellipse -->
+                        <input type="text" class="field s5-dim-0" name="s5_dims_0"
+                            value="{{ data.get('s5_dims', ['',''])[0] }}">
+                        <input type="text" class="field s5-dim-1" name="s5_dims_1"
+                            value="{{ data.get('s5_dims', ['',''])[1] }}">
+                        <input type="checkbox" class="field-checkbox s5-check" name="s5_appears_normal" {% if
+                            data.get('s5_appears_normal') %}checked{% endif %}>
+                        <input type="text" class="field s5-appears-input" name="s5_appears_text"
+                            value="{{ data.get('s5_appears_text', '') }}">
+
+                        <!-- Scars (s6) -->
+                        <input type="checkbox" class="field-checkbox s6-check" name="s6_check" {% if
+                            data.get('s6_check') %}checked{% endif %}>
+                        <input type="text" class="field s6-len" name="s7_len" value="{{ data.get('s7_len', '') }}">
+
+                        <!-- Scar Locations (s7_locs) -->
+                        <input type="checkbox" class="field-word-circle s6-loc-areola" name="s7_locs" value="areola" {%
+                            if 'areola' in data.get('s7_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s6-loc-upper" name="s7_locs" value="upper" {%
+                            if 'upper' in data.get('s7_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s6-loc-lower" name="s7_locs" value="lower" {%
+                            if 'lower' in data.get('s7_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s6-loc-inner" name="s7_locs" value="inner" {%
+                            if 'inner' in data.get('s7_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s6-loc-outer" name="s7_locs" value="outer" {%
+                            if 'outer' in data.get('s7_locs', []) %}checked{% endif %}>
+
+                        <!-- Ulceration (s8) -->
+                        <input type="checkbox" class="field-checkbox s6-ulc-check" name="s8_check" {% if
+                            data.get('s8_check') %}checked{% endif %}>
+                        <input type="text" class="field s6-ulc-dim-0" name="s8_dims_0"
+                            value="{{ data.get('s8_dims', ['',''])[0] }}">
+                        <input type="text" class="field s6-ulc-dim-1" name="s8_dims_1"
+                            value="{{ data.get('s8_dims', ['',''])[1] }}">
+
+                        <!-- s8 Ulceration Locations -->
+                        <input type="checkbox" class="field-word-circle s8-loc-areola" name="s8_locs" value="areola" {%
+                            if 'areola' in data.get('s8_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s8-loc-upper" name="s8_locs" value="upper" {%
+                            if 'upper' in data.get('s8_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s8-loc-lower" name="s8_locs" value="lower" {%
+                            if 'lower' in data.get('s8_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s8-loc-inner" name="s8_locs" value="inner" {%
+                            if 'inner' in data.get('s8_locs', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s8-loc-outer" name="s8_locs" value="outer" {%
+                            if 'outer' in data.get('s8_locs', []) %}checked{% endif %}>
+
+                        <!-- 10. Grammar -->
+                        <input type="radio" class="field-word-circle s10-gram-0" name="s10_grammar" value="is a" {% if
+                            data.get('s10_grammar')=='is a' %}checked{% endif %}>
+                        <input type="radio" class="field-word-circle s10-gram-1" name="s10_grammar" value="is an" {% if
+                            data.get('s10_grammar')=='is an' %}checked{% endif %}>
+                        <input type="radio" class="field-word-circle s10-gram-2" name="s10_grammar" value="are two" {%
+                            if data.get('s10_grammar')=='are two' %}checked{% endif %}>
+                        <input type="radio" class="field-word-circle s10-gram-3" name="s10_grammar" value="are multiple"
+                            {% if data.get('s10_grammar')=='are multiple' %}checked{% endif %}>
+                        <input type="text" class="field text-only-field s10-gram-text" name="s10_grammar_text"
+                            value="{{ data.get('s10_grammar_text', '') }}">
+
+                        <!-- 10. Mass Description -->
+                        <!-- Infiltrative -->
+                        <input type="checkbox" class="field-checkbox s10-inf-check" name="s10_infiltrative" {% if
+                            data.get('s10_infiltrative') %}checked{% endif %}>
+                        <input type="text" class="field s10-inf-dim-0" name="s10_inf_dims_0"
+                            value="{{ data.get('s10_inf_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s10-inf-dim-1" name="s10_inf_dims_1"
+                            value="{{ data.get('s10_inf_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s10-inf-dim-2" name="s10_inf_dims_2"
+                            value="{{ data.get('s10_inf_dims', ['','',''])[2] }}">
+
+                        <!-- Well Defined -->
+                        <input type="checkbox" class="field-checkbox s10-well-check" name="s10_well" {% if
+                            data.get('s10_well') %}checked{% endif %}>
+                        <input type="text" class="field s10-well-dim-0" name="s10_well_dims_0"
+                            value="{{ data.get('s10_well_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s10-well-dim-1" name="s10_well_dims_1"
+                            value="{{ data.get('s10_well_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s10-well-dim-2" name="s10_well_dims_2"
+                            value="{{ data.get('s10_well_dims', ['','',''])[2] }}">
+
+                        <!-- 10. Previous Surgical 1 -->
+                        <input type="checkbox" class="field-checkbox s10-prev1-check" name="s10_prev1" {% if
+                            data.get('s10_prev1') %}checked{% endif %}>
+                        <input type="text" class="field s10-prev1-dim-0" name="s10_prev1_dims_0"
+                            value="{{ data.get('s10_prev1_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s10-prev1-dim-1" name="s10_prev1_dims_1"
+                            value="{{ data.get('s10_prev1_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s10-prev1-dim-2" name="s10_prev1_dims_2"
+                            value="{{ data.get('s10_prev1_dims', ['','',''])[2] }}">
+
+                        <!-- 10. Previous Surgical 2 -->
+                        <input type="checkbox" class="field-checkbox s10-prev2-check" name="s10_prev2" {% if
+                            data.get('s10_prev2') %}checked{% endif %}>
+
+                        <!-- Cavity Dims -->
+                        <input type="text" class="field s10-prev2-c-dim-0" name="s10_prev2_cavity_dims_0"
+                            value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s10-prev2-c-dim-1" name="s10_prev2_cavity_dims_1"
+                            value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s10-prev2-c-dim-2" name="s10_prev2_cavity_dims_2"
+                            value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[2] }}">
+
+                        <!-- Mass Dims -->
+                        <input type="text" class="field s10-prev2-mass_dims_0" name="s10_prev2_mass_dims_0"
+                            value="{{ data.get('s10_prev2_mass_dims', ['','',''])[0] }}">
+                        <input type="text" class="field s10-prev2-mass_dims_1" name="s10_prev2_mass_dims_1"
+                            value="{{ data.get('s10_prev2_mass_dims', ['','',''])[1] }}">
+                        <input type="text" class="field s10-prev2-mass_dims_2" name="s10_prev2_mass_dims_2"
+                            value="{{ data.get('s10_prev2_mass_dims', ['','',''])[2] }}">
+
+                        <!-- 10.5 Location -->
+                        <input type="checkbox" class="field-checkbox s10-5-nipple" name="s10_5_nipple" {% if
+                            data.get('s10_5_nipple') %}checked{% endif %}>
+                        <input type="checkbox" class="field-checkbox s10-5-scar" name="s10_5_scar" {% if
+                            data.get('s10_5_scar') %}checked{% endif %}>
+                        <input type="checkbox" class="field-checkbox s10-5-central" name="s10_5_central" {% if
+                            data.get('s10_5_central') %}checked{% endif %}>
+
+                        <!-- Quadrant Main Check -->
+                        <input type="checkbox" class="field-checkbox s10-5-quad-check" name="s10_5_quadrant_check" {% if
+                            data.get('s10_5_quadrant_check') %}checked{% endif %}>
+
+                        <!-- Quadrant Values (Word Circle) -->
+                        <input type="checkbox" class="field-word-circle s10-5-upper" name="s10_5_quadrant_vals"
+                            value="upper" {% if 'upper' in data.get('s10_5_quadrant_vals', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s10-5-lower" name="s10_5_quadrant_vals"
+                            value="lower" {% if 'lower' in data.get('s10_5_quadrant_vals', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s10-5-inner" name="s10_5_quadrant_vals"
+                            value="inner" {% if 'inner' in data.get('s10_5_quadrant_vals', []) %}checked{% endif %}>
+                        <input type="checkbox" class="field-word-circle s10-5-outer" name="s10_5_quadrant_vals"
+                            value="outer" {% if 'outer' in data.get('s10_5_quadrant_vals', []) %}checked{% endif %}>
+
+                        <input type="checkbox" class="field-checkbox s10-5-other-check" name="s10_5_other_check" {% if
+                            data.get('s10_5_other_check') %}checked{% endif %}>
+                        <input type="text" class="field s10-5-other-text" name="s10_5_other"
+                            value="{{ data.get('s10_5_other', '') }}">
+
+                        <!-- 11. Margins -->
+                        <input type="text" class="field s11-deep" name="s11_deep"
+                            value="{{ data.get('s11_deep', '') }}">
+                        <input type="text" class="field s11-superior" name="s11_superior"
+                            value="{{ data.get('s11_superior', '') }}">
+                        <input type="text" class="field s11-inferior" name="s11_inferior"
+                            value="{{ data.get('s11_inferior', '') }}">
+                        <input type="text" class="field s11-medial" name="s11_medial"
+                            value="{{ data.get('s11_medial', '') }}">
+                        <input type="text" class="field s11-lateral" name="s11_lateral"
+                            value="{{ data.get('s11_lateral', '') }}">
+                        <input type="text" class="field s11-skin" name="s11_skin"
+                            value="{{ data.get('s11_skin', '') }}">
+                        <!-- NEW: Nearest Margin Right Side -->
+                        <input type="text" class="field s11-margin-right" name="s11_margin_right"
+                            value="{{ data.get('s11_margin_right', '') }}">
+
+                        <!-- 12. Uninvolved -->
+                        <input type="checkbox" class="field-checkbox s12-check" name="s12_check" {% if
+                            data.get('s12_check') %}checked{% endif %}>
+                        <input type="text" class="field s12-val-left" name="s12_val_left"
+                            value="{{ data.get('s12_val_left', '') }}">
+                        <input type="text" class="field s12-val-right" name="s12_val_right"
+                            value="{{ data.get('s12_val_right', '') }}">
+
+                        <!-- 13. Remaining -->
+                        <input type="radio" class="field-checkbox s13-unremarkable" name="s13_type" value="unremarkable"
+                            {% if data.get('s13_type')=='unremarkable' %}checked{% endif %}>
+                        <input type="radio" class="field-checkbox s13-other-check" name="s13_type" value="other" {% if
+                            data.get('s13_type')=='other' %}checked{% endif %}>
+                        <input type="text" class="field s13-other-text" name="s13_text"
+                            value="{{ data.get('s13_text', '') }}">
+
+                        <!-- 14. Lymph -->
+                        <input type="checkbox" class="field-checkbox s14-check" name="s14_check" {% if
+                            data.get('s14_check') %}checked{% endif %}>
+                        <input type="text" class="field s14-min" name="s14_min" value="{{ data.get('s14_min', '') }}">
+                        <input type="text" class="field s14-max" name="s14_max" value="{{ data.get('s14_max', '') }}">
+
+                        <!-- Representative Sections -->
+                        {% set sections = data.get('sections', {}) %}
+                        <input type="text" class="field sec-nipple" name="sec_= nipple"
+                            value="{{ sections.get('= nipple', {}).get('code', sections.get('= nipple', '')) if sections.get('= nipple') is mapping else sections.get('= nipple', '') }}">
+                        <input type="text" class="field sec-mass" name="sec_= mass"
+                            value="{{ sections.get('= mass', {}).get('code', sections.get('= mass', '')) if sections.get('= mass') is mapping else sections.get('= mass', '') }}">
+                        <input type="text" class="field sec-cavity" name="sec_= old biopsy cavity with fibrosis"
+                            value="{{ sections.get('= old biopsy cavity with fibrosis', {}).get('code', sections.get('= old biopsy cavity with fibrosis', '')) if sections.get('= old biopsy cavity with fibrosis') is mapping else sections.get('= old biopsy cavity with fibrosis', '') }}">
+                        <input type="text" class="field sec-deep" name="sec_= deep resected margin"
+                            value="{{ sections.get('= deep resected margin', {}).get('code', sections.get('= deep resected margin', '')) if sections.get('= deep resected margin') is mapping else sections.get('= deep resected margin', '') }}">
+                        <input type="text" class="field sec-nearest" name="sec_= nearest resected margin"
+                            value="{{ sections.get('= nearest resected margin', {}).get('code', sections.get('= nearest resected margin', '')) if sections.get('= nearest resected margin') is mapping else sections.get('= nearest resected margin', '') }}">
+
+                        <input type="text" class="field sec-ui" name="sec_= sampling upper inner quadrant"
+                            value="{{ sections.get('= sampling upper inner quadrant', {}).get('code', sections.get('= sampling upper inner quadrant', '')) if sections.get('= sampling upper inner quadrant') is mapping else sections.get('= sampling upper inner quadrant', '') }}">
+                        <input type="text" class="field sec-uo" name="sec_= sampling upper outer quadrant"
+                            value="{{ sections.get('= sampling upper outer quadrant', {}).get('code', sections.get('= sampling upper outer quadrant', '')) if sections.get('= sampling upper outer quadrant') is mapping else sections.get('= sampling upper outer quadrant', '') }}">
+                        <input type="text" class="field sec-li" name="sec_= sampling lower inner quadrant"
+                            value="{{ sections.get('= sampling lower inner quadrant', {}).get('code', sections.get('= sampling lower inner quadrant', '')) if sections.get('= sampling lower inner quadrant') is mapping else sections.get('= sampling lower inner quadrant', '') }}">
+                        <input type="text" class="field sec-lo" name="sec_= sampling lower outer quadrant"
+                            value="{{ sections.get('= sampling lower outer quadrant', {}).get('code', sections.get('= sampling lower outer quadrant', '')) if sections.get('= sampling lower outer quadrant') is mapping else sections.get('= sampling lower outer quadrant', '') }}">
+                        <input type="text" class="field sec-central" name="sec_= sampling central region"
+                            value="{{ sections.get('= sampling central region', {}).get('code', sections.get('= sampling central region', '')) if sections.get('= sampling central region') is mapping else sections.get('= sampling central region', '') }}">
+                        <input type="text" class="field sec-axillary" name="sec_= axillary lymph nodes"
+                            value="{{ sections.get('= axillary lymph nodes', {}).get('code', sections.get('= axillary lymph nodes', '')) if sections.get('= axillary lymph nodes') is mapping else sections.get('= axillary lymph nodes', '') }}">
+
+                        <!-- Footer -->
+                        <input type="text" class="field footer-prosecutor" name="footer_prosecutor"
+                            value="{{ data.get('footer_prosecutor', '') }}">
+                        <input type="text" class="field footer-date" name="footer_date"
+                            value="{{ data.get('footer_date', '') }}">
+
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <!-- EMPTY STATE (No Transcription) -->
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+                <h1 style="font-size: 4rem;">👈</h1>
+                <h3>Select a file to start</h3>
+                <p>Upload a dictation file from the left panel to begin editing.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</body>
+
+</html>

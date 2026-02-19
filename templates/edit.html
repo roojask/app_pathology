@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Pathology Report Data</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Sarabun:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .card {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e1e4e8;
+        }
+
+        .card-header {
+            background-color: #fff;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .section-title {
+            color: #0d6efd;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #34495e;
+            font-size: 0.9rem;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container py-5">
+        <form action="/generate" method="post">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">📝 Verify & Edit Data</h4>
+                    <button type="submit" class="btn btn-primary">Confirm & Generate PDF</button>
+                </div>
+                <div class="card-body">
+
+                    <!-- Hidden field to pass original transcription if needed/display -->
+                    <input type="hidden" name="transcription" value="{{ transcription }}">
+
+                    <!-- 0. Surgical No -->
+                    <h5 class="section-title">Header Info</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Surgical Number</label>
+                            <input type="text" class="form-control" name="s0_surgical_no"
+                                value="{{ data.get('s0_surgical_no', '') }}">
+                        </div>
+                    </div>
+
+                    <!-- 1. Side & Procedure -->
+                    <h5 class="section-title">General Info</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Side</label>
+                            <select class="form-select" name="s1_side">
+                                <option value="">- Select -</option>
+                                <option value="right" {% if data.get('s1_side')=='right' %}selected{% endif %}>Right
+                                </option>
+                                <option value="left" {% if data.get('s1_side')=='left' %}selected{% endif %}>Left
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Procedure</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="s2_proc" value="modified" id="proc1"
+                                    {% if data.get('s2_proc')=='modified' %}checked{% endif %}>
+                                <label class="form-check-label" for="proc1">Modified Radical Mastectomy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="s2_proc" value="simple" id="proc2" {%
+                                    if data.get('s2_proc')=='simple' %}checked{% endif %}>
+                                <label class="form-check-label" for="proc2">Simple Mastectomy</label>
+                            </div>
+                            <div class="form-check d-flex align-items-center gap-2">
+                                <input class="form-check-input" type="radio" name="s2_proc" value="other" id="proc3" {%
+                                    if data.get('s2_proc')=='other' %}checked{% endif %}>
+                                <label class="form-check-label text-nowrap" for="proc3">Other:</label>
+                                <input type="text" class="form-control form-control-sm" name="s2_other_text"
+                                    value="{{ data.get('s2_other_text', '') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Measuring -->
+                    <h5 class="section-title">Specimen Measuring</h5>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto"><label class="col-form-label">Measuring:</label></div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s3_dims_0"
+                                value="{{ data.get('s3_dims', ['','',''])[0] }}"></div>
+                        <div class="col-auto">x</div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s3_dims_1"
+                                value="{{ data.get('s3_dims', ['','',''])[1] }}"></div>
+                        <div class="col-auto">x</div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s3_dims_2"
+                                value="{{ data.get('s3_dims', ['','',''])[2] }}"></div>
+                        <div class="col-auto">cm.</div>
+                    </div>
+
+                    <!-- 4. Axillary -->
+                    <div class="mt-3 row g-3 align-items-center">
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="s4_check" id="s4_check" {% if
+                                    data.get('s4_check') %}checked{% endif %}>
+                                <label class="form-check-label fw-bold" for="s4_check">With Axillary Content</label>
+                            </div>
+                        </div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s4_dims_0"
+                                value="{{ data.get('s4_dims', ['','',''])[0] }}"></div>
+                        <div class="col-auto">x</div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s4_dims_1"
+                                value="{{ data.get('s4_dims', ['','',''])[1] }}"></div>
+                        <div class="col-auto">x</div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s4_dims_2"
+                                value="{{ data.get('s4_dims', ['','',''])[2] }}"></div>
+                        <div class="col-auto">cm.</div>
+                    </div>
+
+                    <!-- 5. Skin Ellipse -->
+                    <h5 class="section-title">Skin Ellipse</h5>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-2"><input type="text" class="form-control" name="s5_dims_0"
+                                value="{{ data.get('s5_dims', ['',''])[0] }}"></div>
+                        <div class="col-auto">x</div>
+                        <div class="col-md-2"><input type="text" class="form-control" name="s5_dims_1"
+                                value="{{ data.get('s5_dims', ['',''])[1] }}"></div>
+                        <div class="col-auto">cm.</div>
+                        <div class="col-auto ms-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="s6_check" id="s6_check" {% if
+                                    data.get('s6_check') %}checked{% endif %}>
+                                <label class="form-check-label" for="s6_check">Appears Normal</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7. Old Surgical Scar -->
+                    <div class="mt-3 card p-3 bg-light border-0">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="s7_check" id="s7_check" {% if
+                                data.get('s7_check') %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="s7_check">Shows old surgical scar</label>
+                        </div>
+                        <div class="row g-2 align-items-center ms-3">
+                            <div class="col-auto"><input type="text" class="form-control form-control-sm" name="s7_len"
+                                    size="4" value="{{ data.get('s7_len', '') }}"></div>
+                            <div class="col-auto">cm in length at</div>
+                            <div class="col-auto">
+                                {% for loc in ['areola', 'upper', 'lower', 'inner', 'outer'] %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="s7_locs" value="{{ loc }}" {%
+                                        if loc in data.get('s7_locs', []) %}checked{% endif %}>
+                                    <label class="form-check-label small">{{ loc }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 8. Ulceration -->
+                    <div class="mt-2 card p-3 bg-light border-0">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="s8_check" id="s8_check" {% if
+                                data.get('s8_check') %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="s8_check">Shows an ulceration</label>
+                        </div>
+                        <div class="row g-2 align-items-center ms-3">
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s8_dims_0" value="{{ data.get('s8_dims', ['',''])[0] }}"></div>
+                            <div class="col-auto">x</div>
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s8_dims_1" value="{{ data.get('s8_dims', ['',''])[1] }}"></div>
+                            <div class="col-auto">cm. at</div>
+                            <div class="col-auto">
+                                {% for loc in ['areola', 'upper', 'lower', 'inner', 'outer'] %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="s8_locs" value="{{ loc }}" {%
+                                        if loc in data.get('s8_locs', []) %}checked{% endif %}>
+                                    <label class="form-check-label small">{{ loc }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 9. Nipple -->
+                    <h5 class="section-title">The Nipple</h5>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="s9_val" value="everted" {% if
+                                data.get('s9_val')=='everted' %}checked{% endif %}>
+                            <label class="form-check-label">Is Everted</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="s9_val" value="inverted" {% if
+                                data.get('s9_val')=='inverted' %}checked{% endif %}>
+                            <label class="form-check-label">Shows Inverted</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="s9_val" value="ulceration" {% if
+                                data.get('s9_val')=='ulceration' %}checked{% endif %}>
+                            <label class="form-check-label">Shows Ulceration</label>
+                        </div>
+                        <input type="text" class="form-control form-control-sm w-25" name="s9_ulcer_text"
+                            placeholder="Ulcer details..." value="{{ data.get('s9_ulcer_text', '') }}">
+                    </div>
+
+                    <!-- 10. Mass Description -->
+                    <h5 class="section-title">Mass Description</h5>
+                    <div class="mb-3">
+                        <label class="form-label me-2">There is/are:</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="s10_grammar" value="is a" {% if
+                                data.get('s10_grammar')=='is a' %}checked{% endif %}>
+                            <label class="form-check-label">is a</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="s10_grammar" value="is an" {% if
+                                data.get('s10_grammar')=='is an' %}checked{% endif %}>
+                            <label class="form-check-label">is an</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="s10_grammar" value="are two" {% if
+                                data.get('s10_grammar')=='are two' %}checked{% endif %}>
+                            <label class="form-check-label">are two</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="s10_grammar" value="are multiple" {% if
+                                data.get('s10_grammar')=='are multiple' %}checked{% endif %}>
+                            <label class="form-check-label">are multiple</label>
+                        </div>
+                    </div>
+
+                    <!-- Mass Types -->
+                    <div class="card p-3 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="s10_infiltrative" {% if
+                                data.get('s10_infiltrative') %}checked{% endif %}>
+                            <label class="form-check-label fw-bold">Infiltrative firm yellow white mass</label>
+                        </div>
+                        <div class="row g-2 align-items-center ms-3 mt-1">
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_inf_dims_0" value="{{ data.get('s10_inf_dims', ['','',''])[0] }}"></div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_inf_dims_1" value="{{ data.get('s10_inf_dims', ['','',''])[1] }}"></div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_inf_dims_2" value="{{ data.get('s10_inf_dims', ['','',''])[2] }}"></div>
+                            cm.
+                        </div>
+                    </div>
+
+                    <div class="card p-3 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="s10_well" {% if data.get('s10_well')
+                                %}checked{% endif %}>
+                            <label class="form-check-label fw-bold">Well-defined firm white mass with slit like
+                                appearance</label>
+                        </div>
+                        <div class="row g-2 align-items-center ms-3 mt-1">
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_well_dims_0" value="{{ data.get('s10_well_dims', ['','',''])[0] }}"></div>
+                            x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_well_dims_1" value="{{ data.get('s10_well_dims', ['','',''])[1] }}"></div>
+                            x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_well_dims_2" value="{{ data.get('s10_well_dims', ['','',''])[2] }}"></div>
+                            cm.
+                        </div>
+                    </div>
+
+                    <div class="card p-3 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="s10_prev1" {% if data.get('s10_prev1')
+                                %}checked{% endif %}>
+                            <label class="form-check-label fw-bold">Previous surgical cavity with adjacent fibrous
+                                tissue</label>
+                        </div>
+                        <div class="row g-2 align-items-center ms-3 mt-1">
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev1_dims_0" value="{{ data.get('s10_prev1_dims', ['','',''])[0] }}">
+                            </div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev1_dims_1" value="{{ data.get('s10_prev1_dims', ['','',''])[1] }}">
+                            </div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev1_dims_2" value="{{ data.get('s10_prev1_dims', ['','',''])[2] }}">
+                            </div> cm.
+                        </div>
+                    </div>
+
+                    <div class="card p-3 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="s10_prev2" {% if data.get('s10_prev2')
+                                %}checked{% endif %}>
+                            <label class="form-check-label fw-bold">Previous surgical cavity with residual mass</label>
+                        </div>
+                        <div class="row g-2 align-items-center ms-3 mt-1">
+                            <div class="col-auto">Cavity:</div>
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev2_cavity_dims_0"
+                                    value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[0] }}"></div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev2_cavity_dims_1"
+                                    value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[1] }}"></div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev2_cavity_dims_2"
+                                    value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[2] }}"></div> cm.
+                        </div>
+                        <div class="row g-2 align-items-center ms-3 mt-1">
+                            <div class="col-auto">Mass:</div>
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev2_mass_dims_0"
+                                    value="{{ data.get('s10_prev2_mass_dims', ['','',''])[0] }}"></div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev2_mass_dims_1"
+                                    value="{{ data.get('s10_prev2_mass_dims', ['','',''])[1] }}"></div> x
+                            <div class="col-md-2"><input type="text" class="form-control form-control-sm"
+                                    name="s10_prev2_mass_dims_2"
+                                    value="{{ data.get('s10_prev2_mass_dims', ['','',''])[2] }}"></div> cm.
+                        </div>
+                    </div>
+
+                    <!-- Mass Location -->
+                    <h5 class="section-title">Located</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="s10_5_nipple" {% if
+                                    data.get('s10_5_nipple') %}checked{% endif %}>
+                                <label class="form-check-label">Beneath the nipple</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="s10_5_scar" {% if
+                                    data.get('s10_5_scar') %}checked{% endif %}>
+                                <label class="form-check-label">Beneath the scar</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="s10_5_central" {% if
+                                    data.get('s10_5_central') %}checked{% endif %}>
+                                <label class="form-check-label">In the central portion (subareola)</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1 align-items-center">
+                        <div class="col-auto">In quadrant:</div>
+                        <div class="col-auto">
+                            {% for loc in ['upper', 'lower', 'inner', 'outer'] %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="s10_5_quadrant_vals"
+                                    value="{{ loc }}" {% if loc in data.get('s10_5_quadrant_vals', []) %}checked{% endif
+                                    %}>
+                                <label class="form-check-label small">{{ loc }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1 align-items-center">
+                        <div class="col-auto">Other location:</div>
+                        <div class="col">
+                            <input type="text" class="form-control" name="s10_5_other"
+                                value="{{ data.get('s10_5_other', '') }}">
+                        </div>
+                    </div>
+
+                    <!-- 11. Tumor Margins -->
+                    <h5 class="section-title">Tumor Is Located</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control text-end" name="s11_deep"
+                                    value="{{ data.get('s11_deep', '') }}">
+                                <span class="input-group-text">cm from Deep Margin</span>
+                            </div>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control text-end" name="s11_inferior"
+                                    value="{{ data.get('s11_inferior', '') }}">
+                                <span class="input-group-text">cm from Inferior Margin</span>
+                            </div>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control text-end" name="s11_lateral"
+                                    value="{{ data.get('s11_lateral', '') }}">
+                                <span class="input-group-text">cm from Lateral Margin</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control text-end" name="s11_superior"
+                                    value="{{ data.get('s11_superior', '') }}">
+                                <span class="input-group-text">cm from Superior Margin</span>
+                            </div>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control text-end" name="s11_medial"
+                                    value="{{ data.get('s11_medial', '') }}">
+                                <span class="input-group-text">cm from Medial Margin</span>
+                            </div>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control text-end" name="s11_skin"
+                                    value="{{ data.get('s11_skin', '') }}">
+                                <span class="input-group-text">cm from Skin</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 12-14 Other -->
+                    <h5 class="section-title">Other Findings</h5>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">Fat : Fibrous Ratio</div>
+                        <div class="col-md-1"><input type="text" class="form-control text-center" name="s12_val_left"
+                                value="{{ data.get('s12_val_left', '') }}"></div>
+                        <div class="col-auto">:</div>
+                        <div class="col-md-1"><input type="text" class="form-control text-center" name="s12_val_right"
+                                value="{{ data.get('s12_val_right', '') }}"></div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="s13_type" value="unremarkable" {% if
+                                data.get('s13_type')=='unremarkable' %}checked{% endif %}>
+                            <label class="form-check-label">Remaining breast tissue is unremarkable</label>
+                        </div>
+                        <div class="form-check d-flex align-items-center gap-2">
+                            <input class="form-check-input" type="radio" name="s13_type" value="other" {% if
+                                data.get('s13_type')=='other' %}checked{% endif %}>
+                            <label class="form-check-label text-nowrap">Other:</label>
+                            <input type="text" class="form-control form-control-sm" name="s13_text"
+                                value="{{ data.get('s13_text', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="mt-3 row g-2 align-items-center">
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="s14_check" {% if
+                                    data.get('s14_check') %}checked{% endif %}>
+                                <label class="form-check-label fw-bold">Multiple Lymph Nodes</label>
+                            </div>
+                        </div>
+                        <div class="col-auto">ranging from</div>
+                        <div class="col-md-2"><input type="text" class="form-control form-control-sm" name="s14_min"
+                                value="{{ data.get('s14_min', '') }}"></div>
+                        <div class="col-auto">to</div>
+                        <div class="col-md-2"><input type="text" class="form-control form-control-sm" name="s14_max"
+                                value="{{ data.get('s14_max', '') }}"></div>
+                        <div class="col-auto">cm.</div>
+                    </div>
+
+                    <!-- 15. Sections -->
+                    <h5 class="section-title">Representative Sections (Codes)</h5>
+                    <div class="row g-2">
+                        {% for key, label in {
+                        '= nipple': 'Nipple',
+                        '= mass': 'Mass',
+                        '= old biopsy cavity with fibrosis': 'Old Biopsy Cavity',
+                        '= deep resected margin': 'Deep Margin',
+                        '= nearest resected margin': 'Nearest Margin',
+                        '= sampling upper inner quadrant': 'Upper Inner',
+                        '= sampling upper outer quadrant': 'Upper Outer',
+                        '= sampling lower inner quadrant': 'Lower Inner',
+                        '= sampling lower outer quadrant': 'Lower Outer',
+                        '= sampling central region': 'Central',
+                        '= axillary lymph nodes': 'Axillary Nodes'
+                        }.items() %}
+                        <div class="col-md-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text w-25">{{ label }}</span>
+                                <input type="text" class="form-control" name="sec_{{ key }}"
+                                    value="{{ data.get('sections', {}).get(key, {}).get('code', '') if data.get('sections', {}).get(key) is mapping else data.get('sections', {}).get(key, '') }}">
+                                {% if 'nearest' in key or 'deep' in key %}
+                                <input type="text" class="form-control w-25" placeholder="Extra info"
+                                    name="sec_extra_{{ key }}"
+                                    value="{{ data.get('sections', {}).get(key, {}).get('extra', '') }}">
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

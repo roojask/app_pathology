@@ -1,0 +1,642 @@
+.s1-surgical {
+    left: 875.5px;
+    top: 81.6px;
+    width: 220px;
+}
+
+.field,
+.field-checkbox,
+.field-radio,
+.field-word-circle {
+    z-index: 100 !important;
+}
+
+.s1-right {
+    position: absolute;
+    box-sizing: border-box;
+    left: 318.5px;
+    top: 179.5px;
+    width: 48.0px;
+    height: 23.6px;
+}
+
+.s1-left {
+    position: absolute;
+    box-sizing: border-box;
+    left: 374.5px;
+    top: 179.5px;
+    width: 34.1px;
+    height: 23.6px;
+}
+
+.s3-check {
+    left: 432.1px;
+    top: 179.9px;
+}
+
+.s3-simple {
+    left: 122.2px;
+    top: 220.0px;
+}
+
+.s3-dim-0 {
+    left: 240.2px;
+    top: 256.9px;
+    width: 45px;
+}
+
+.s3-dim-1 {
+    left: 330.2px;
+    top: 256.9px;
+    width: 45px;
+}
+
+.s3-dim-2 {
+    left: 420.2px;
+    top: 256.9px;
+    width: 45px;
+}
+
+.s4-check {
+    left: 513.2px;
+    top: 259.8px;
+}
+
+.s4-dim-0 {
+    left: 716.5px;
+    top: 256.9px;
+    width: 45px;
+}
+
+.s4-dim-1 {
+    left: 806.5px;
+    top: 256.9px;
+    width: 45px;
+}
+
+.s4-dim-2 {
+    left: 896.5px;
+    top: 256.9px;
+    width: 45px;
+}
+
+.s5-dim-0 {
+    left: 220.0px;
+    top: 296.8px;
+    width: 45px;
+}
+
+.s5-dim-1 {
+    left: 340.0px;
+    top: 296.8px;
+    width: 45px;
+}
+
+.s5-check {
+    left: 476.2px;
+    top: 299.7px;
+}
+
+.s5-appears-input {
+    left: 635.0px;
+    top: 292.8px;
+    width: 300px;
+}
+
+.s6-check {
+    left: 72.0px;
+    top: 341.9px;
+}
+
+.s6-len {
+    left: 315.6px;
+    top: 339.0px;
+    width: 50px;
+}
+
+.s6-loc-areola {
+    position: absolute;
+    box-sizing: border-box;
+    left: 541.3px;
+    top: 341.0px;
+    width: 56.0px;
+    height: 24.1px;
+}
+
+.s6-loc-upper {
+    position: absolute;
+    box-sizing: border-box;
+    left: 606.3px;
+    top: 341.0px;
+    width: 52.0px;
+    height: 24.1px;
+}
+
+.s6-loc-lower {
+    position: absolute;
+    box-sizing: border-box;
+    left: 667.4px;
+    top: 341.0px;
+    width: 48.9px;
+    height: 24.1px;
+}
+
+.s6-loc-inner {
+    position: absolute;
+    box-sizing: border-box;
+    left: 725.2px;
+    top: 341.0px;
+    width: 46.2px;
+    height: 24.1px;
+}
+
+.s6-loc-outer {
+    position: absolute;
+    box-sizing: border-box;
+    left: 780.3px;
+    top: 341.0px;
+    width: 46.8px;
+    height: 24.1px;
+}
+
+.s6-ulc-check {
+    left: 72.0px;
+    top: 384.4px;
+}
+
+.s6-ulc-dim-0 {
+    left: 275.6px;
+    top: 381.5px;
+    width: 40px;
+}
+
+.s6-ulc-dim-1 {
+    left: 365.6px;
+    top: 381.5px;
+    width: 40px;
+}
+
+.s8-loc-areola {
+    position: absolute;
+    box-sizing: border-box;
+    left: 527.7px;
+    top: 383.5px;
+    width: 55.8px;
+    height: 24.1px;
+}
+
+.s8-loc-upper {
+    position: absolute;
+    box-sizing: border-box;
+    left: 592.6px;
+    top: 383.5px;
+    width: 52.1px;
+    height: 24.1px;
+}
+
+.s8-loc-lower {
+    position: absolute;
+    box-sizing: border-box;
+    left: 653.6px;
+    top: 383.5px;
+    width: 49.1px;
+    height: 24.1px;
+}
+
+.s8-loc-inner {
+    position: absolute;
+    box-sizing: border-box;
+    left: 711.6px;
+    top: 383.5px;
+    width: 46.1px;
+    height: 24.1px;
+}
+
+.s8-loc-outer {
+    position: absolute;
+    box-sizing: border-box;
+    left: 766.5px;
+    top: 383.5px;
+    width: 47.2px;
+    height: 24.1px;
+}
+
+.s9-everted {
+    left: 182.2px;
+    top: 425.4px;
+}
+
+.s9-inverted {
+    left: 305.5px;
+    top: 425.4px;
+}
+
+.s9-ulc {
+    left: 476.2px;
+    top: 425.4px;
+}
+
+.s9-ulc-text {
+    left: 679.8px;
+    top: 422.5px;
+    width: 300px;
+}
+
+.s10-inf-dim-0 {
+    left: 465.8px;
+    top: 501.7px;
+}
+
+.s10-inf-dim-1 {
+    left: 576.6px;
+    top: 501.7px;
+}
+
+.s10-inf-dim-2 {
+    left: 669.6px;
+    top: 501.7px;
+}
+
+.s10-inf-check {
+    left: 144.0px;
+    top: 500.8px;
+}
+
+.s10-well-dim-0 {
+    left: 655.9px;
+    top: 541.5px;
+}
+
+.s10-well-dim-1 {
+    left: 766.8px;
+    top: 541.5px;
+}
+
+.s10-well-dim-2 {
+    left: 859.6px;
+    top: 541.5px;
+}
+
+.s10-well-check {
+    left: 144.0px;
+    top: 540.7px;
+}
+
+.s10-prev1-dim-0 {
+    left: 621.9px;
+    top: 581.6px;
+}
+
+.s10-prev1-dim-0 {
+    left: 665.0px;
+    top: 578.0px;
+    width: 40px;
+}
+
+.s10-prev1-dim-1 {
+    left: 765.0px;
+    top: 578.0px;
+    width: 40px;
+}
+
+.s10-prev1-dim-2 {
+    left: 865.0px;
+    top: 578.0px;
+    width: 40px;
+}
+
+.s10-prev1-check {
+    left: 144.0px;
+    top: 580.8px;
+}
+
+.s10-prev2-check {
+    left: 143.0px;
+    top: 624.0px;
+}
+
+.s10-prev2-c-dim-0 {
+    left: 665.0px;
+    top: 618.0px;
+    width: 40px;
+}
+
+.s10-prev2-c-dim-1 {
+    left: 765.0px;
+    top: 618.0px;
+    width: 40px;
+}
+
+.s10-prev2-c-dim-2 {
+    left: 865.0px;
+    top: 618.0px;
+    width: 40px;
+}
+
+.s10-prev2-mass_dims_0 {
+    left: 365.0px;
+    top: 654.0px;
+    width: 40px;
+}
+
+.s10-prev2-mass_dims_1 {
+    left: 465.0px;
+    top: 654.0px;
+    width: 40px;
+}
+
+.s10-prev2-mass_dims_2 {
+    left: 565.0px;
+    top: 654.0px;
+    width: 40px;
+}
+
+.s10-5-nipple {
+    left: 227.3px;
+    top: 713.2px;
+}
+
+.s10-5-scar {
+    left: 430.9px;
+    top: 713.2px;
+}
+
+.s10-5-central {
+    left: 610.4px;
+    top: 713.2px;
+}
+
+.s10-5-quad-check {
+    left: 199.2px;
+    top: 756.0px;
+}
+
+.s10-5-other-check {
+    left: 613.0px;
+    top: 764.0px;
+}
+
+.s10-5-other-text {
+    left: 651.0px;
+    top: 758.0px;
+    width: 300px;
+}
+
+.s10-5-upper {
+    position: absolute;
+    box-sizing: border-box;
+    left: 267.6px;
+    top: 755.1px;
+    width: 52.1px;
+    height: 24.1px;
+}
+
+.s10-5-lower {
+    position: absolute;
+    box-sizing: border-box;
+    left: 328.5px;
+    top: 755.1px;
+    width: 49.1px;
+    height: 24.1px;
+}
+
+.s10-5-inner {
+    position: absolute;
+    box-sizing: border-box;
+    left: 386.5px;
+    top: 755.1px;
+    width: 46.0px;
+    height: 24.1px;
+}
+
+.s10-5-outer {
+    position: absolute;
+    box-sizing: border-box;
+    left: 441.5px;
+    top: 755.1px;
+    width: 47.2px;
+    height: 24.1px;
+}
+
+.s11-deep {
+    left: 127.3px;
+    top: 828.0px;
+    width: 150px;
+}
+
+.s11-superior {
+    left: 617.9px;
+    top: 832.3px;
+    width: 150px;
+}
+
+.s11-inferior {
+    left: 127.3px;
+    top: 871.9px;
+    width: 150px;
+}
+
+.s11-medial {
+    left: 617.9px;
+    top: 871.9px;
+    width: 150px;
+}
+
+.s11-lateral {
+    left: 127.3px;
+    top: 907.9px;
+    width: 150px;
+}
+
+.s11-skin {
+    left: 657.9px;
+    top: 907.9px;
+    width: 150px;
+}
+
+.s10-gram-0 {
+    position: absolute;
+    box-sizing: border-box;
+    left: 145.0px;
+    top: 462.5px;
+    width: 40.4px;
+    height: 23.6px;
+}
+
+.s10-gram-1 {
+    position: absolute;
+    box-sizing: border-box;
+    left: 193.9px;
+    top: 462.5px;
+    width: 55.1px;
+    height: 23.6px;
+}
+
+.s10-gram-2 {
+    position: absolute;
+    box-sizing: border-box;
+    left: 259.5px;
+    top: 462.5px;
+    width: 75.0px;
+    height: 23.6px;
+}
+
+.s10-gram-3 {
+    position: absolute;
+    box-sizing: border-box;
+    left: 342.9px;
+    top: 462.5px;
+    width: 114.5px;
+    height: 23.6px;
+}
+
+.s10-gram-text {
+    left: 444.5px;
+    top: 462.8px;
+    width: 300px;
+}
+
+.s3-other-check {
+    left: 432.1px;
+    top: 220.0px;
+}
+
+.s3-other-text {
+    left: 480.1px;
+    top: 214.0px;
+    width: 300px;
+}
+
+.footer-prosecutor {
+    left: 802.0px;
+    top: 1362.8px;
+    width: 260px;
+}
+
+.footer-date {
+    left: 876.0px;
+    top: 1390.4px;
+    width: 120px;
+}
+
+.s12-check {
+    left: 72.0px;
+    top: 969.4px;
+}
+
+.s12-val-left {
+    left: 795.6px;
+    top: 966.5px;
+    width: 30px;
+}
+
+.s12-val-right {
+    left: 875.6px;
+    top: 966.5px;
+    width: 30px;
+}
+
+.s13-unremarkable {
+    left: 346.6px;
+    top: 1009.4px;
+}
+
+.s13-other-check {
+    left: 520.6px;
+    top: 1007.4px;
+}
+
+.s13-other-text {
+    left: 544.6px;
+    top: 999.4px;
+    width: 280px;
+}
+
+.s14-check {
+    left: 72.0px;
+    top: 1049.3px;
+}
+
+.s14-min {
+    left: 525.6px;
+    top: 1046.4px;
+    width: 100px;
+}
+
+.s14-max {
+    left: 805.6px;
+    top: 1046.4px;
+    width: 100px;
+}
+
+.sec-nipple {
+    left: 70.0px;
+    top: 1118.6px;
+    width: 140px;
+}
+
+.sec-mass {
+    left: 574.1px;
+    top: 1118.6px;
+    width: 140px;
+}
+
+.sec-cavity {
+    left: 70.0px;
+    top: 1153.7px;
+    width: 140px;
+}
+
+.sec-deep {
+    left: 574.1px;
+    top: 1153.7px;
+    width: 140px;
+}
+
+.sec-nearest {
+    left: 70.0px;
+    top: 1188.8px;
+    width: 140px;
+}
+
+.sec-ui {
+    left: 70.0px;
+    top: 1223.8px;
+    width: 140px;
+}
+
+.sec-uo {
+    left: 574.1px;
+    top: 1223.8px;
+    width: 140px;
+}
+
+.sec-li {
+    left: 70.0px;
+    top: 1258.9px;
+    width: 140px;
+}
+
+.sec-lo {
+    left: 574.1px;
+    top: 1258.9px;
+    width: 140px;
+}
+
+.sec-central {
+    left: 70.0px;
+    top: 1293.9px;
+    width: 140px;
+}
+
+.sec-axillary {
+    left: 574.1px;
+    top: 1293.9px;
+    width: 140px;
+}
+
+.s11-margin-right {
+    left: 485.0px;
+    top: 1186.0px;
+    width: 300px;
+}

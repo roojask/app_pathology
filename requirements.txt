@@ -1,0 +1,6 @@
+
+Flask==3.0.3
+pymupdf==1.24.10
+openai-whisper==20250625
+torch           # (optional, if you want GPU/CPU acceleration for whisper)       # (optional, if you want GPU/CPU acceleration for whisper)
+pdf2docx

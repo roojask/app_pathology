@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  pathology-app:
+    build: .
+    container_name: pathology_ai
+    ports:
+      - "5000:5000"  # map พอร์ตเครื่องเรา (ซ้าย) ไปหาพอร์ต Docker (ขวา)
+    volumes:
+      # map โฟลเดอร์ outputs ออกมาข้างนอก เพื่อให้เราเปิดไฟล์ PDF ได้แม้ปิด Docker
+      - ./outputs:/app/outputs
+      - ./uploads:/app/uploads
+    restart: unless-stopped

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patho Voice Assistant - Document View</title>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- LEFT: DOCUMENT PANE -->
+        <div class="document-pane">
+
+            <div class="header-bar">
+                <div class="app-title">Patho Voice Assistant (ผู้ช่วยพยาธิวิทยา)</div>
+                <div class="controls">
+                    <div>มุมมองเอกสาร (Document View)</div>
+                    <div class="control-item" id="btn-mic-toggle"
+                        style="background:#ddd; padding:5px 10px; border-radius:5px;">
+                        <i class="fas fa-microphone"></i> เริ่มบันทึกเสียง
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Transcription Area -->
+            <div
+                style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ccc; border-radius: 5px;">
+                <form action="/" method="post" id="transcription-form">
+                    <label style="font-weight:bold;">ข้อความจากการพูด (Live Transcription):</label>
+                    <textarea name="transcription_text" id="transcription-text" rows="3"
+                        style="width: 100%; border: 1px solid #ccc; padding: 10px; font-family: inherit; font-size: 1rem;"
+                        placeholder="กดปุ่ม 'เริ่มบันทึกเสียง' แล้วพูด... (เช่น 'Surgical number S-24-1234 Received in formalin...')">{{ transcription if transcription else '' }}</textarea>
+
+                    <div id="mic-status-container"
+                        style="min-height: 20px; margin-top: 5px; font-style: italic; color: #666;"></div>
+                    <div style="text-align: right; margin-top: 10px;">
+                        <button type="submit" class="btn-generate" style="width: auto; background-color: #27ae60;">
+                            <i class="fas fa-check"></i> ยืนยันและดึงข้อมูล (Extract)
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <form action="/generate" method="post" class="patho-form">
+
+                <!-- Hidden Transcription Field (legacy sync) -->
+                <input type="hidden" name="transcription" value="{{ transcription }}">
+
+                <div class="form-header">
+                    Surgical Number S
+                    <input type="text" name="s0_surgical_no" class="inline-input" style="width: 150px;"
+                        value="{{ data.get('s0_surgical_no', '') if data else '' }}">
+                </div>
+
+                <div class="form-title" style="text-align: center; font-weight: bold; margin-bottom: 5px;">Breast cancer
+                </div>
+
+                <div class="form-row">
+                    Received in formalin is a (
+                    <label class="circle-option {% if data and data.get('s1_side') == 'right' %}selected{% endif %}">
+                        <input type="radio" name="s1_side" value="right" {% if data and data.get('s1_side')=='right'
+                            %}checked{% endif %}>
+                        <span>right</span>
+                    </label>
+                    /
+                    <label class="circle-option {% if data and data.get('s1_side') == 'left' %}selected{% endif %}">
+                        <input type="radio" name="s1_side" value="left" {% if data and data.get('s1_side')=='left'
+                            %}checked{% endif %}>
+                        <span>left</span>
+                    </label>
+                    )
+                    <label>
+                        <input type="checkbox" name="s2_proc" value="modified" {% if data and
+                            data.get('s2_proc')=='modified' %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>modified radical mastectomy specimen
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s2_proc" value="simple" {% if data and
+                            data.get('s2_proc')=='simple' %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>simple mastectomy specimen
+                    </label>
+                    <label>
+                        <input type="checkbox" name="s2_proc" value="other" {% if data and data.get('s2_proc')=='other'
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>
+                        <input type="text" name="s2_other_text" class="inline-input"
+                            style="width: 300px; border-bottom: 1px dotted #000;"
+                            value="{{ data.get('s2_other_text', '') if data else '' }}">
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    Measuring
+                    <input type="text" name="s3_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s3_dims', ['','',''])[0] if data and data.get('s3_dims') else '' }}"> x
+                    <input type="text" name="s3_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s3_dims', ['','',''])[1] if data and data.get('s3_dims') else '' }}"> x
+                    <input type="text" name="s3_dims_2" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s3_dims', ['','',''])[2] if data and data.get('s3_dims') else '' }}"> cm.
+
+                    <label style="margin-left: 20px;">
+                        <input type="checkbox" name="s4_check" value="true" {% if data and data.get('s4_check')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>with axillary content ,
+                    </label>
+                    <input type="text" name="s4_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s4_dims', ['','',''])[0] if data and data.get('s4_dims') else '' }}"> x
+                    <input type="text" name="s4_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s4_dims', ['','',''])[1] if data and data.get('s4_dims') else '' }}"> x
+                    <input type="text" name="s4_dims_2" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s4_dims', ['','',''])[2] if data and data.get('s4_dims') else '' }}"> cm.
+                </div>
+
+                <div class="form-row">
+                    The skin ellipse ,
+                    <input type="text" name="s5_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s5_dims', ['',''])[0] if data and data.get('s5_dims') else '' }}"> x
+                    <input type="text" name="s5_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s5_dims', ['',''])[1] if data and data.get('s5_dims') else '' }}"> cm. and
+                    <label>
+                        <input type="checkbox" name="s5_appears_normal" value="true" {% if data and
+                            data.get('s5_appears_normal') %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>appears normal
+                    </label>
+                    <input type="text" class="inline-input" style="width: 200px; border-bottom: 1px dotted #000;">
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s6_check" value="true" {% if data and data.get('s6_check')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>shows an old surgical scar
+                    </label>
+                    <input type="text" name="s7_len" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s7_len', '') if data else '' }}"> cm in length at (
+                    {% for loc in ['areola', 'upper', 'lower', 'inner', 'outer'] %}
+                    <label class="circle-option">
+                        <input type="checkbox" name="s7_locs" value="{{ loc }}" {% if data and loc in
+                            data.get('s7_locs', []) %}checked{% endif %}>
+                        <span
+                            style="{% if data and loc in data.get('s7_locs', []) %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
+                            loc }}</span>
+                    </label>
+                    {% if not loop.last %}/{% endif %}
+                    {% endfor %}
+                    ) ( quadrant ).
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s8_check" value="true" {% if data and data.get('s8_check')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>shows an ulceration
+                    </label>
+                    <input type="text" name="s8_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s8_dims', ['',''])[0] if data and data.get('s8_dims') else '' }}"> x
+                    <input type="text" name="s8_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s8_dims', ['',''])[1] if data and data.get('s8_dims') else '' }}"> cm . at (
+                    {% for loc in ['areola', 'upper', 'lower', 'inner', 'outer'] %}
+                    <label class="circle-option">
+                        <input type="checkbox" name="s8_locs" value="{{ loc }}" {% if data and loc in
+                            data.get('s8_locs', []) %}checked{% endif %}>
+                        <span
+                            style="{% if data and loc in data.get('s8_locs', []) %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
+                            loc }}</span>
+                    </label>
+                    {% if not loop.last %}/{% endif %}
+                    {% endfor %}
+                    ) ( quadrant ).
+                </div>
+
+                <div class="form-row">
+                    The nipple
+                    <label>
+                        <input type="checkbox" name="s9_val" value="everted" {% if data and 'everted' in
+                            data.get('s9_val', []) %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>is everted .
+                    </label>
+                    <label>
+                        <input type="checkbox" name="s9_val" value="inverted" {% if data and 'inverted' in
+                            data.get('s9_val', []) %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>shows inverted .
+                    </label>
+                    <label>
+                        <input type="checkbox" name="s9_val" value="ulceration" {% if data and 'ulceration' in
+                            data.get('s9_val', []) %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>shows ulceration
+                    </label>
+                    <input type="text" name="s9_ulcer_text" class="inline-input"
+                        style="width: 150px; border-bottom: 1px dotted #000;"
+                        value="{{ data.get('s9_ulcer_text', '') if data else '' }}">
+                </div>
+
+                <div class="form-row">
+                    There (
+                    {% for grammar in ['is a', 'is an', 'are two', 'are multiple'] %}
+                    <label class="circle-option">
+                        <input type="radio" name="s10_grammar" value="{{ grammar }}" {% if data and
+                            data.get('s10_grammar')==grammar %}checked{% endif %}>
+                        <span
+                            style="{% if data and data.get('s10_grammar') == grammar %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
+                            grammar }}</span>
+                    </label>
+                    {% if not loop.last %}/{% endif %}
+                    {% endfor %}
+                    )
+                    <input type="text" class="inline-input" style="width: 200px; border-bottom: 1px dotted #000;">
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s10_infiltrative" value="true" {% if data and
+                            data.get('s10_infiltrative') %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>infiltrative firm yellow white mass ,
+                    </label>
+                    <input type="text" name="s10_inf_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_inf_dims', ['','',''])[0] if data and data.get('s10_inf_dims') else '' }}">
+                    x
+                    <input type="text" name="s10_inf_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_inf_dims', ['','',''])[1] if data and data.get('s10_inf_dims') else '' }}">
+                    x
+                    <input type="text" name="s10_inf_dims_2" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_inf_dims', ['','',''])[2] if data and data.get('s10_inf_dims') else '' }}">
+                    cm.
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s10_well" value="true" {% if data and data.get('s10_well')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>well – defined firm white mass with slit like appearance ,
+                    </label>
+                    <input type="text" name="s10_well_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_well_dims', ['','',''])[0] if data and data.get('s10_well_dims') else '' }}">
+                    x
+                    <input type="text" name="s10_well_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_well_dims', ['','',''])[1] if data and data.get('s10_well_dims') else '' }}">
+                    x
+                    <input type="text" name="s10_well_dims_2" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_well_dims', ['','',''])[2] if data and data.get('s10_well_dims') else '' }}">
+                    cm.
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s10_prev1" value="true" {% if data and data.get('s10_prev1')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>previous surgical cavity with adjacent fibrous tissue ,
+                    </label>
+                    <input type="text" name="s10_prev1_dims_0" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_prev1_dims', ['','',''])[0] if data and data.get('s10_prev1_dims') else '' }}">
+                    x
+                    <input type="text" name="s10_prev1_dims_1" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_prev1_dims', ['','',''])[1] if data and data.get('s10_prev1_dims') else '' }}">
+                    x
+                    <input type="text" name="s10_prev1_dims_2" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s10_prev1_dims', ['','',''])[2] if data and data.get('s10_prev1_dims') else '' }}">
+                    cm.
+                </div>
+
+                <div class="form-row">
+                    <label style="display: block; width: 100%;">
+                        <input type="checkbox" name="s10_prev2" value="true" {% if data and data.get('s10_prev2')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>previous surgical cavity with adjacent fibrous tissue ,
+                        <input type="text" name="s10_prev2_cavity_dims_0" class="inline-input" style="width: 40px;"
+                            value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[0] if data and data.get('s10_prev2_cavity_dims') else '' }}">
+                        x
+                        <input type="text" name="s10_prev2_cavity_dims_1" class="inline-input" style="width: 40px;"
+                            value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[1] if data and data.get('s10_prev2_cavity_dims') else '' }}">
+                        x
+                        <input type="text" name="s10_prev2_cavity_dims_2" class="inline-input" style="width: 40px;"
+                            value="{{ data.get('s10_prev2_cavity_dims', ['','',''])[2] if data and data.get('s10_prev2_cavity_dims') else '' }}">
+                        cm.
+                        and a firm yellow white residual mass ,
+                        <input type="text" name="s10_prev2_mass_dims_0" class="inline-input" style="width: 40px;"
+                            value="{{ data.get('s10_prev2_mass_dims', ['','',''])[0] if data and data.get('s10_prev2_mass_dims') else '' }}">
+                        x
+                        <input type="text" name="s10_prev2_mass_dims_1" class="inline-input" style="width: 40px;"
+                            value="{{ data.get('s10_prev2_mass_dims', ['','',''])[1] if data and data.get('s10_prev2_mass_dims') else '' }}">
+                        x
+                        <input type="text" name="s10_prev2_mass_dims_2" class="inline-input" style="width: 40px;"
+                            value="{{ data.get('s10_prev2_mass_dims', ['','',''])[2] if data and data.get('s10_prev2_mass_dims') else '' }}">
+                        cm.
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    located
+                    <label>
+                        <input type="checkbox" name="s10_5_nipple" value="true" {% if data and data.get('s10_5_nipple')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>beneath the nipple .
+                    </label>
+                    <label>
+                        <input type="checkbox" name="s10_5_scar" value="true" {% if data and data.get('s10_5_scar')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>beneath the scar .
+                    </label>
+                    <label>
+                        <input type="checkbox" name="s10_5_central" value="true" {% if data and
+                            data.get('s10_5_central') %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>in the central portion ( subareola ) .
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s10_5_quadrant_check" value="true" {% if data and
+                            data.get('s10_5_quadrant_check') %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>in (
+                    </label>
+                    {% for loc in ['upper', 'lower', 'inner', 'outer'] %}
+                    <label class="circle-option">
+                        <input type="checkbox" name="s10_5_quadrant_vals" value="{{ loc }}" {% if data and loc in
+                            data.get('s10_5_quadrant_vals', []) %}checked{% endif %}>
+                        <span
+                            style="{% if data and loc in data.get('s10_5_quadrant_vals', []) %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
+                            loc }}</span>
+                    </label>
+                    {% if not loop.last %}/{% endif %}
+                    {% endfor %}
+                    ) quadrant .
+                    <label style="margin-left: 20px;">
+                        <input type="checkbox" name="s10_5_other_check" value="true">
+                        <span class="checkbox-visual"></span>
+                        <input type="text" name="s10_5_other" class="inline-input"
+                            style="width: 200px; border-bottom: 1px dotted #000;"
+                            value="{{ data.get('s10_5_other', '') if data else '' }}">
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px;">
+                                <input type="text" name="s11_deep" class="inline-input" style="width: 60px;"
+                                    value="{{ data.get('s11_deep', '') if data else '' }}"> cm. from deep margin ,
+                            </td>
+                            <td style="padding: 5px;">
+                                <input type="text" name="s11_superior" class="inline-input" style="width: 60px;"
+                                    value="{{ data.get('s11_superior', '') if data else '' }}"> cm. from superior margin
+                                ,
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">
+                                <input type="text" name="s11_inferior" class="inline-input" style="width: 60px;"
+                                    value="{{ data.get('s11_inferior', '') if data else '' }}"> cm. from inferior margin
+                                ,
+                            </td>
+                            <td style="padding: 5px;">
+                                <input type="text" name="s11_medial" class="inline-input" style="width: 60px;"
+                                    value="{{ data.get('s11_medial', '') if data else '' }}"> cm. from medial margin ,
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;">
+                                <input type="text" name="s11_lateral" class="inline-input" style="width: 60px;"
+                                    value="{{ data.get('s11_lateral', '') if data else '' }}"> cm. from lateral margin ,
+                            </td>
+                            <td style="padding: 5px;">
+                                and <input type="text" name="s11_skin" class="inline-input" style="width: 60px;"
+                                    value="{{ data.get('s11_skin', '') if data else '' }}"> cm. from skin .
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="form-row">
+                    Tumor is located <input type="text" name="tumor_location_text" class="inline-input"
+                        style="width: 300px;">
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s12_check" value="true" {% if data and data.get('s12_check')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>The uninvolved breast parenchyma has a fat to fibrous
+                        tissue ratio of approximately
+                    </label>
+                    <input type="text" name="s12_val_left" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s12_val_left', '') if data else '' }}"> :
+                    <input type="text" name="s12_val_right" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s12_val_right', '') if data else '' }}"> .
+                </div>
+
+                <div class="form-row">
+                    The remaining of breast tissue
+                    <label>
+                        <input type="checkbox" name="s13_type" value="unremarkable" {% if data and
+                            data.get('s13_type')=='unremarkable' %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>is unremarkable .
+                    </label>
+                    <label>
+                        <input type="checkbox" name="s13_type" value="other" {% if data and
+                            data.get('s13_type')=='other' %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>
+                        <input type="text" name="s13_text" class="inline-input"
+                            style="width: 300px; border-bottom: 1px dotted #000;"
+                            value="{{ data.get('s13_text', '') if data else '' }}">
+                    </label>
+                </div>
+
+                <div class="form-row">
+                    <label>
+                        <input type="checkbox" name="s14_check" value="true" {% if data and data.get('s14_check')
+                            %}checked{% endif %}>
+                        <span class="checkbox-visual"></span>There are multiple lymph nodes ranging from
+                    </label>
+                    <input type="text" name="s14_min" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s14_min', '') if data else '' }}"> cm . to
+                    <input type="text" name="s14_max" class="inline-input" style="width: 40px;"
+                        value="{{ data.get('s14_max', '') if data else '' }}"> cm . in diameter.
+                </div>
+
+                <div class="form-row">
+                    Representative sections are submitted as
+                </div>
+
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
+                    <tr>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_nipple" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= nipple', {}).get('code', '') if data else '' }}">
+                            = nipple
+                        </td>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_mass" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= mass', {}).get('code', '') if data else '' }}">
+                            = mass
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_old_biopsy" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= old biopsy cavity with fibrosis', {}).get('code', '') if data else '' }}">
+                            = old biopsy cavity with fibrosis
+                        </td>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_deep_margin" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= deep resected margin', {}).get('code', '') if data else '' }}">
+                            = deep resected margin
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" colspan="2">
+                            <input type="text" name="sec_nearest_margin" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= nearest resected margin', {}).get('code', '') if data else '' }}">
+                            = nearest resected margin ,
+                            <input type="text" name="sec_extra_nearest_margin" class="inline-input"
+                                style="width: 250px; border-bottom: 1px dotted #000;"
+                                value="{{ data.get('sections', {}).get('= nearest resected margin', {}).get('extra', '') if data else '' }}">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_upper_inner" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= sampling upper inner quadrant', {}).get('code', '') if data else '' }}">
+                            = sampling upper inner quadrant
+                        </td>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_upper_outer" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= sampling upper outer quadrant', {}).get('code', '') if data else '' }}">
+                            = sampling upper outer quadrant
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_lower_inner" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= sampling lower inner quadrant', {}).get('code', '') if data else '' }}">
+                            = sampling lower inner quadrant
+                        </td>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_lower_outer" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= sampling lower outer quadrant', {}).get('code', '') if data else '' }}">
+                            = sampling lower outer quadrant
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_central" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= sampling central region', {}).get('code', '') if data else '' }}">
+                            = sampling central region
+                        </td>
+                        <td style="padding: 5px;">
+                            <input type="text" name="sec_axillary" class="inline-input" style="width: 80px;"
+                                value="{{ data.get('sections', {}).get('= axillary lymph nodes', {}).get('code', '') if data else '' }}">
+                            = axillary lymph nodes
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="form-row" style="margin-top: 50px; justify-content: flex-end;">
+                    <input type="text" name="footer_prosecutor" class="inline-input"
+                        style="width: 250px; text-align: center;"
+                        value="{{ data.get('footer_prosecutor', '') if data else '' }}"
+                        placeholder="................................................."> Prosecutor
+                </div>
+                <div class="form-row" style="justify-content: flex-end;">
+                    Date <input type="text" name="footer_date" class="inline-input"
+                        style="width: 200px; text-align: center;"
+                        value="{{ data.get('footer_date', '') if data else '' }}"
+                        placeholder=".................................................">
+                </div>
+                <div class="form-row" style="justify-content: flex-end; margin-top: 10px;">
+                    Approved in conference 2/10/2014
+                </div>
+
+                <div class="form-row" style="justify-content: center; margin-top: 30px;">
+                    <button type="submit" class="btn-generate" id="btn-save-submit">สร้าง PDF (Generate PDF)</button>
+                    {% if pdf_filename %}
+                    <a href="{{ url_for('download_file', filename=pdf_filename) }}" class="btn-generate"
+                        id="btn-download-pdf" download
+                        style="background:#2ecc71; text-align:center; text-decoration:none; margin-left:10px;">ดาวน์โหลดไฟล์
+                        PDF (Download)</a>
+                    {% endif %}
+                </div>
+
+            </form>
+
+        </div>
+
+        <!-- RIGHT: CAMERA & TOOLS -->
+        <div class="side-pane">
+
+            <!-- Camera Feed -->
+            <div class="camera-feed">
+                <video class="input_video" style="display:none"></video>
+                <canvas class="output_canvas" width="480px" height="360px"></canvas>
+                <div class="camera-overlay-text">ภาพจากกล้อง (Camera Feed)</div>
+                <div class="gesture-controls">
+                    <div class="gesture-box" id="box-clear" data-action="CLEAR">CLEAR</div>
+                    <div class="gesture-box" id="box-scroll-up" data-action="SCROLL_UP">SCROLL UP</div>
+                    <div class="gesture-box" id="box-prev" data-action="PREV">PREV BOX</div>
+                    <div class="gesture-box" id="box-next" data-action="NEXT">NEXT BOX</div>
+                    <div class="gesture-box" id="box-select" data-action="SELECT">SELECTION</div>
+                    <div class="gesture-box" id="box-scroll-down" data-action="SCROLL_DOWN">SCROLL DOWN</div>
+                    <div class="gesture-box" id="box-save" data-action="SAVE">SAVE / PDF</div>
+                    <div class="gesture-box" id="box-mic" data-action="MIC_TOGGLE">MIC ON/OFF</div>
+                </div>
+            </div>
+
+            <!-- Upload Box -->
+            <div class="file-upload-section">
+                <!-- Upload Form (POST to /) -->
+                <form action="/" method="post" enctype="multipart/form-data">
+                    <label for="file-upload" class="custom-file-upload">
+                        อัปโหลดไฟล์เสียง (Dictation File):
+                    </label>
+                    <input id="file-upload" type="file" name="audio_file">
+                    <button type="submit" class="upload-btn">ประมวลผลเสียง (Process Audio)</button>
+                </form>
+            </div>
+
+            <!-- Dictation Result / Transcript -->
+            <div class="transcript-box">
+                <h4>ผลการถอดความ (Dictation Result):</h4>
+                <div class="transcript-content">
+                    {{ transcription if transcription else "No transcription available." }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='script.js') }}?v=1.4"></script>
+</body>
+
+</html>
