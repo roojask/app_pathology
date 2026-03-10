@@ -299,3 +299,18 @@ input[type="radio"] {
 .btn-generate:hover {
     background-color: #357abd;
 }
+
+/* --- Confidence Highlighting --- */
+.low-confidence-highlight {
+    background-color: #fff3cd !important;
+    border: 2px dashed #ffc107 !important;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    transition: all 0.3s ease;
+}
+
+.low-confidence-highlight:focus {
+    background-color: #ffffff !important;
+    border: 2px solid #28a745 !important;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}

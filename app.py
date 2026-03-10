@@ -76,7 +76,7 @@ def format_section_code(code):
 
 def extract_data_15_sections(text):
     t = normalize_text(text)
-    data = {}
+    data = {"_low_confidence": []}
 
     # 0. Surgical Number
     # Pattern: "surgical number S-XX-XXXX" or similar
@@ -95,11 +95,14 @@ def extract_data_15_sections(text):
         if m: 
             data["s2_proc"] = "other"
             data["s2_other_text"] = m.group(1).strip()
+            # Free text extraction might be inaccurate
+            data["_low_confidence"].append("s2_other_text")
 
     # 3. Measuring
     m = re.search(r"specimen measuring\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
     if m: data["s3_dims"] = [m.group(1), m.group(2), m.group(3)]
-
+    elif "measuring" in t:
+        data["_low_confidence"].extend(["s3_dims_0", "s3_dims_1", "s3_dims_2"])
     # 4. Axillary
     if "axillary content" in t:
         data["s4_check"] = True
@@ -325,6 +328,15 @@ def extract_data_15_sections(text):
         "= axillary lymph nodes": ["axillary"]
     }
     data["sections"] = {}
+    
+    # A bit of heuristic: if sections are mentioned but we couldn't parse them well
+    if "representative sections are submitted as" in t and not data["sections"]:
+        data["_low_confidence"].extend(["sec_nipple", "sec_mass", "sec_old_biopsy", "sec_deep_margin"])
+
+    # First pass: try to catch lines that start with A<number> or similar
+    # Allow multiple connector words like 'equals', 'sampling', 'and', 'from'
+    # Pattern: Captures Code (e.g. A1, A2-1) and the Description
+    # Added \s*-\s* to code pattern to match things like "A5-1"
     for anchor, keywords in section_map.items():
         found = False
         for kw in keywords:
@@ -886,9 +898,28 @@ def index():
                 if not hasattr(app, "model_lock"):
                      app.model_lock = threading.Lock()
                      
+                # Dynamic Prompt Injection (Phase 2 Upgrade)
+                # Feeding Whisper our specific grossing terminology to drastically reduce WER
+                pathology_prompt = (
+                    "Received in formalin. Modified radical mastectomy specimen. "
+                    "Simple mastectomy. Skin ellipse. The nipple is everted, inverted, shows ulceration. "
+                    "Infiltrative firm yellow-white mass. Well-defined firm white mass with slit-like appearance. "
+                    "Previous surgical cavity with adjacent fibrous tissue. Residual mass. "
+                    "Beneath the nipple, beneath the scar, subareola. "
+                    "Upper inner quadrant, lower outer quadrant. "
+                    "Deep margin, superior margin, inferior margin, medial margin, lateral margin. "
+                    "Uninvolved breast parenchyma. Lymph nodes ranging from. "
+                    "Representative sections are submitted as. Nipple, mass, old biopsy cavity."
+                )
+
                 with app.model_lock:
-                    transcription_result = model.transcribe(str(audio_path), language="en") # Added language="en" for consistency
+                    transcription_result = model.transcribe(
+                        str(audio_path), 
+                        language="en", 
+                        initial_prompt=pathology_prompt
+                    ) 
                 transcription = transcription_result['text']
+                transcription = normalize_text(transcription) # Post-processing heuristics
                 print(f"Transcription from Audio: {transcription}")
             except Exception as e:
                 print(f"Error during transcription: {e}")

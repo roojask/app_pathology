@@ -25,7 +25,7 @@ def compare_data(expected, actual):
                 incorrect_keys.append((key, expected_val, actual_val))
                 
     for key in actual:
-        if key not in expected:
+        if key not in expected and key != "_low_confidence":
             extra_keys.append(key)
             
     return total_keys, matched_keys, missing_keys, incorrect_keys, extra_keys
