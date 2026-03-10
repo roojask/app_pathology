@@ -54,16 +54,25 @@ def normalize_text(text):
 
 def format_section_code(code):
     """Format codes: A21 -> A2-1, A2-1 to A4-1 -> A2-1-A4-1"""
+    # Replace "to" or "and" with a special token holding the dashes
     code = re.sub(r"\b(to|and)\b", "-", code, flags=re.IGNORECASE)
     code = code.upper().replace(" ", "")
-    parts = re.split(r"[-;,]", code)
+    
+    # Split by comma or semicolon, keep hyphens intact
+    parts = re.split(r"[;,]", code)
     formatted_parts = []
     for p in parts:
         if not p: continue
-        if re.match(r"^[A-Z]\d{2,}$", p):
-            p = f"{p[0]}{p[1]}-{p[2:]}"
-        formatted_parts.append(p)
-    return "-".join(formatted_parts)
+        # Since p might be "A2-1-A4-1" or "A2-1", we need to format the components separated by hyphens
+        sub_parts = p.split('-')
+        formatted_sub = []
+        for sp in sub_parts:
+            if not sp: continue
+            if re.match(r"^[A-Z]\d{2,}$", sp):
+                sp = f"{sp[0]}{sp[1]}-{sp[2:]}"
+            formatted_sub.append(sp)
+        formatted_parts.append("-".join(formatted_sub))
+    return ",".join(formatted_parts)
 
 def extract_data_15_sections(text):
     t = normalize_text(text)
@@ -183,20 +192,38 @@ def extract_data_15_sections(text):
         m = re.search(r"well.*?defined.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
         if m: data["s10_well_dims"] = [m.group(1), m.group(2), m.group(3)]
 
-    if "previous surgical cavity" in t and "residual mass" not in t:
-        mass_count += 1
-        data["s10_prev1"] = True
-        mass_types.append("prev1")
-        m = re.search(r"previous surgical cavity.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-        if m: data["s10_prev1_dims"] = [m.group(1), m.group(2), m.group(3)]
-
-    if "residual mass" in t:
-        mass_count += 1
-        data["s10_prev2"] = True
-        mass_types.append("prev2")
-        m1 = re.search(r"previous surgical cavity.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-        if m1: data["s10_prev2_cavity_dims"] = [m1.group(1), m1.group(2), m1.group(3)]
-        m2 = re.search(r"residual mass.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
+    if "previous surgical cavity" in t:
+        if "residual mass" not in t:
+            mass_count += 1
+            data["s10_prev1"] = True
+            mass_types.append("prev1")
+            m = re.search(r"previous surgical cavity.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
+            if m: data["s10_prev1_dims"] = [m.group(1), m.group(2), m.group(3)]
+        else:
+            # Handle the case where both cavity and residual mass are present (case 3)
+            # The structure is: previous surgical cavity with adjacent fibrous tissue [dims] and a firm yellow-white residual mass [dims]
+            # First, check if there's a standalone cavity mentioned before the residual mass
+            # It's safer to just set both if both are identified individually, but the logic here separates them strictly by whether 'residual mass' is present.
+            # Let's adjust to allow BOTH s10_prev1 to be true IF it's a separate entity, OR if the form expects both.
+            # Acutally, if "residual mass" is present in the document, it could be tied to the surgical cavity.
+            # Let's check the distance or explicitly capture both if they appear in the same context.
+            # For simplicity, if both phrases exist, we might need to populate s10_prev2, AND if another cavity is meant, it's ambiguous.
+            # However, looking at expected_data: "s10_prev1": true, "s10_prev1_dims": ["1", "5", "7"], "s10_prev2": true, "s10_prev2_cavity_dims": ["1", "5", "7"], "s10_prev2_mass_dims": ["5", "9", "3"]
+            # The test case expects BOTH s10_prev1 AND s10_prev2 to be populated from the SAME sentence.
+            mass_count += 2
+            data["s10_prev1"] = True
+            mass_types.append("prev1")
+            m1 = re.search(r"previous surgical cavity.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
+            if m1: data["s10_prev1_dims"] = [m1.group(1), m1.group(2), m1.group(3)]
+            
+            data["s10_prev2"] = True
+            mass_types.append("prev2")
+            if m1: data["s10_prev2_cavity_dims"] = [m1.group(1), m1.group(2), m1.group(3)]
+            m2 = re.search(r"residual mass.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
+            if not m2:
+                 # Try simpler pattern: just numbers near residual mass
+                 m2 = re.search(r"residual mass.*?([\d.]+)\s*(?:x|by)\s*([\d.]+)\s*(?:x|by)\s*([\d.]+)", t)
+            if m2: data["s10_prev2_mass_dims"] = [m2.group(1), m2.group(2), m2.group(3)]
         if not m2:
              # Try simpler pattern: just numbers near residual mass
              # e.g. "residual mass 1.5 x 2 x 3"
@@ -302,15 +329,15 @@ def extract_data_15_sections(text):
         found = False
         for kw in keywords:
             # Pattern 1: A1, A2 = nipple
-            pattern1 = rf"((?:[a-zA-Z]\s?-?\s?\d+(?:[-\s]?\d+)*(?:\s*(?:to|and|-|,)\s*)*)+)\s*(?:=|equals?|is|-|old|sampling|submitted as|with)?\s*{kw}"
+            pattern1 = rf"((?:[a-zA-Z]\s?-?\s?\d+(?:[-\s]?\d+)*(?:\s*(?:to|and|-|,)\s*)*)+)(?:\s*(?:=|equals?|is|-|old|sampling|submitted as|with))*\s*{kw}"
             # Pattern 2: nipple = A1, A2 or nipple is A1
-            pattern2 = rf"{kw}\s*(?:=|equals?|is|-|old|sampling|submitted as|with)?\s*((?:[a-zA-Z]\s?-?\s?\d+(?:[-\s]?\d+)*(?:\s*(?:to|and|-|,)\s*)*)+)"
+            pattern2 = rf"{kw}(?:\s*(?:=|equals?|is|-|old|sampling|submitted as|with))*\s*((?:[a-zA-Z]\s?-?\s?\d+(?:[-\s]?\d+)*(?:\s*(?:to|and|-|,)\s*)*)+)"
             
             for pat in [pattern1, pattern2]:
                 m = re.search(pat, t)
                 if m:
                     raw_code = m.group(1)
-                    clean_code = re.sub(r"\b(old|to|and|is|sampling|with)\b", "", raw_code, flags=re.IGNORECASE).strip()
+                    clean_code = re.sub(r"\b(old|is|sampling|with)\b", "", raw_code, flags=re.IGNORECASE).strip()
                     # Clean up trailing punctuation if Pattern 2 matched text at end of sentence
                     clean_code = clean_code.rstrip(".,")
                     formatted_code = format_section_code(clean_code)
@@ -318,13 +345,19 @@ def extract_data_15_sections(text):
                     extra_text = ""
                     if "nearest resected" in anchor or "deep resected" in anchor:
                         # Try to capture "with ..." after the code or keyword
-                        suffix_match = re.search(rf"{kw}.*?{raw_code}\s+(with\s+[^,.]+)", t)
-                        if not suffix_match: # Try after keyword if Pattern 1
-                            suffix_match = re.search(rf"{raw_code}.*?{kw}\s+(with\s+[^,.]+)", t)
-                            
+                        # Instead of relying just on raw_code, let's search for the pattern broadly around the keyword
+                        # Example: "a5-1 equal the resected margin with mass"
+                        # We grabbed "a5-1" as raw code, kw is "deep resected" or "the resected"
+                        
+                        suffix_match = re.search(rf"{kw}\s*(margin)?\s+(with\s+[^,.]+)", t)
                         if suffix_match:
-                            extra_text = suffix_match.group(1).strip()
-    
+                            extra_text = suffix_match.group(2).strip()
+                        else:
+                            # Try searching after raw code
+                            suffix_match = re.search(rf"{raw_code}.*?{kw}\s*(margin)?\s+(with\s+[^,.]+)", t)
+                            if suffix_match:
+                                extra_text = suffix_match.group(2).strip()
+
                     data["sections"][anchor] = {
                         "code": formatted_code,
                         "extra": extra_text

@@ -1,0 +1,153 @@
+[
+    {
+        "id": "mapping_case_01",
+        "input_text": "Received in formalin is a right modified radical mastectomy specimen measuring 18 by 9 by 6 centimeters. The skin ellipse, 15 by 7 centimeters, appears normal. The nipple is everted. There is an infiltrative firm yellow-white mass, 3.6 by 3 by 2.8 centimeters located in lower outer quadrant. Tumor is located 0.7 centimeters from deep margin, 3.5 centimeters from superior margin, 1 centimeter from inferior margin, 8 centimeters from medial margin, 5 centimeters from lateral margin, and 0.4 centimeters from skin. The remaining of breast tissue is unremarkable. Representative sections are submitted as A1-1 nipple, A2-1 to A4-1 equal mass, A5-1 equal deep resected margin with mass, A6-1 equal inferior resected margin with mass.",
+        "expected_data": {
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "18",
+                "9",
+                "6"
+            ],
+            "s5_dims": [
+                "15",
+                "7"
+            ],
+            "s5_appears_normal": true,
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3.6",
+                "3",
+                "2.8"
+            ],
+            "s10_grammar": "is an",
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower",
+                "outer"
+            ],
+            "s11_deep": "0.7",
+            "s11_superior": "3.5",
+            "s11_inferior": "1",
+            "s11_medial": "8",
+            "s11_lateral": "5",
+            "s11_skin": "0.4",
+            "s13_type": "unremarkable",
+            "sections": {
+                "= nipple": {
+                    "code": "A1-1",
+                    "extra": ""
+                },
+                "= mass": {
+                    "code": "A2-1-A4-1",
+                    "extra": ""
+                },
+                "= deep resected margin": {
+                    "code": "A5-1",
+                    "extra": "with mass"
+                },
+                "= nearest resected margin": {
+                    "code": "A6-1",
+                    "extra": "with mass"
+                }
+            }
+        }
+    },
+    {
+        "id": "mapping_case_02",
+        "input_text": "Surgical number S-24-999. The specimen is received from the right side. The procedure is simple mastectomy. Specimen measuring 15 by 12 by 5 centimeters. The breast tissue shows an ulceration 4 by 3 centimeters at lower outer quadrant. The uninvolved breast tissue ratio of approximately 3 to 1. There are multiple lymph nodes ranging from 1.5 cm to 0.5 cm in diameter. Representative sections are submitted as A5 axillary lymph nodes.",
+        "expected_data": {
+            "s0_surgical_no": "S-24-999",
+            "s1_side": "right",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "15",
+                "12",
+                "5"
+            ],
+            "s8_check": true,
+            "s8_dims": [
+                "4",
+                "3"
+            ],
+            "s8_locs": [
+                "lower",
+                "outer"
+            ],
+            "s12_check": true,
+            "s12_val_left": "3",
+            "s12_val_right": "1",
+            "s14_check": true,
+            "s14_min": "1.5",
+            "s14_max": "0.5",
+            "sections": {
+                "= axillary lymph nodes": {
+                    "code": "A5",
+                    "extra": ""
+                }
+            }
+        }
+    },
+    {
+        "id": "mapping_case_03",
+        "input_text": "Received in formalin is a left modified radical mastectomy specimen measuring 18 by 9 by 6 centimeters shows an old surgical scar 7 centimeters in length at upper inner quadrant. The nipple shows ulceration. There are multiple well-defined firm white mass with slit-like appearance, 1 by 2 by 3 centimeters. Previous surgical cavity with adjacent fibrous tissue, 1 by 5 by 7 centimeters, and a firm yellow-white residual mass, 5 by 9 by 3 centimeters, located beneath the scar. Tumor is located 0.7 centimeters from deep margin. Representative sections are submitted as A2 old biopsy cavity with fibrosis, A21-A41 equals sampling upper inner quadrant.",
+        "expected_data": {
+            "s1_side": "left",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "18",
+                "9",
+                "6"
+            ],
+            "s6_check": true,
+            "s7_len": "7",
+            "s7_locs": [
+                "upper",
+                "inner"
+            ],
+            "s9_val": [
+                "ulceration"
+            ],
+            "s10_well": true,
+            "s10_well_dims": [
+                "1",
+                "2",
+                "3"
+            ],
+            "s10_prev1": true,
+            "s10_prev1_dims": [
+                "1",
+                "5",
+                "7"
+            ],
+            "s10_prev2": true,
+            "s10_prev2_cavity_dims": [
+                "1",
+                "5",
+                "7"
+            ],
+            "s10_prev2_mass_dims": [
+                "5",
+                "9",
+                "3"
+            ],
+            "s10_grammar": "are multiple",
+            "s10_5_scar": true,
+            "s11_deep": "0.7",
+            "sections": {
+                "= old biopsy cavity with fibrosis": {
+                    "code": "A2",
+                    "extra": ""
+                },
+                "= sampling upper inner quadrant": {
+                    "code": "A2-1-A4-1",
+                    "extra": ""
+                }
+            }
+        }
+    }
+]
