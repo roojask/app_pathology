@@ -5,3 +5,5 @@ openai-whisper==20250625
 torch           # (optional, if you want GPU/CPU acceleration for whisper)
 pdf2docx
 jiwer==3.0.3
+spacy
+en_core_web_sm
