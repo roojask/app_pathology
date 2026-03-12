@@ -6,28 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patho Voice Assistant - Document View</title>
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
-    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
 
     <div class="main-container">
-        <!-- LEFT: DOCUMENT PANE -->
         <div class="document-pane">
 
             <div class="header-bar">
                 <div class="app-title">Patho Voice Assistant (ผู้ช่วยพยาธิวิทยา)</div>
-                <div class="controls">
+                <div class="controls" style="display: flex; align-items: center; gap: 15px;">
+                    {% if current_user.is_authenticated %}
+                    <div style="font-weight: bold; color: #333;">
+                        <i class="fas fa-user-circle"></i> {{ current_user.name or current_user.username }}
+                    </div>
+                    <a href="{{ url_for('history') }}" class="btn-generate"
+                        style="background-color: #28a745; width: auto; padding: 5px 15px; text-decoration: none; font-size: 14px;">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn-generate"
+                        style="background-color: #e74c3c; width: auto; padding: 5px 15px; text-decoration: none; font-size: 14px;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-generate"
+                        style="background-color: #3498db; width: auto; padding: 5px 15px; text-decoration: none; font-size: 14px;">
+                        <i class="fas fa-sign-in-alt"></i> Login / Register
+                    </a>
+                    {% endif %}
+
                     <div>มุมมองเอกสาร (Document View)</div>
                     <div class="control-item" id="btn-mic-toggle"
-                        style="background:#ddd; padding:5px 10px; border-radius:5px;">
+                        style="background:#ddd; padding:5px 10px; border-radius:5px; cursor:pointer;">
                         <i class="fas fa-microphone"></i> เริ่มบันทึกเสียง
                     </div>
                 </div>
             </div>
 
-            <!-- Live Transcription Area -->
             <div
                 style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ccc; border-radius: 5px;">
                 <form action="/" method="post" id="transcription-form">
@@ -48,7 +64,6 @@
 
             <form action="/generate" method="post" class="patho-form">
 
-                <!-- Hidden Transcription Field (legacy sync) -->
                 <input type="hidden" name="transcription" value="{{ transcription }}">
 
                 <div class="form-header">
@@ -529,10 +544,8 @@
 
         </div>
 
-        <!-- RIGHT: CAMERA & TOOLS -->
         <div class="side-pane">
 
-            <!-- Camera Feed -->
             <div class="camera-feed">
                 <video class="input_video" style="display:none"></video>
                 <canvas class="output_canvas" width="480px" height="360px"></canvas>
@@ -549,9 +562,7 @@
                 </div>
             </div>
 
-            <!-- Upload Box -->
             <div class="file-upload-section">
-                <!-- Upload Form (POST to /) -->
                 <form action="/" method="post" enctype="multipart/form-data">
                     <label for="file-upload" class="custom-file-upload">
                         อัปโหลดไฟล์เสียง (Dictation File):
@@ -561,7 +572,6 @@
                 </form>
             </div>
 
-            <!-- Dictation Result / Transcript -->
             <div class="transcript-box">
                 <h4>ผลการถอดความ (Dictation Result):</h4>
                 <div class="transcript-content">
@@ -579,22 +589,27 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='script.js') }}?v=1.4"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // รับค่า _low_confidence ที่ส่งมาจาก app.py
             const lowConfidenceKeys = {{ data.get('_low_confidence', []) | tojson if data else '[]' | safe
         }};
+
         if (lowConfidenceKeys && lowConfidenceKeys.length > 0) {
             lowConfidenceKeys.forEach(key => {
                 const elements = document.querySelectorAll(`[name="${key}"]`);
                 elements.forEach(el => {
                     if (el.type === 'radio' || el.type === 'checkbox') {
                         const visual = el.nextElementSibling;
+                        // ไฮไลต์ให้ตัว checkbox/radio หรือวงกลม
                         if (visual && visual.classList.contains('checkbox-visual')) {
                             visual.classList.add('low-confidence-highlight');
                         } else if (el.parentElement && el.parentElement.classList.contains('circle-option')) {
                             el.parentElement.classList.add('low-confidence-highlight');
                         }
                     } else {
+                        // ไฮไลต์ให้ text input 
                         el.classList.add('low-confidence-highlight');
                     }
                 });

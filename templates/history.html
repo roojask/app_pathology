@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form History - Patho Voice Assistant</title>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .history-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn-load {
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .btn-load:hover {
+            background-color: #218838;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body style="background-color: #eef2f3; margin:0; font-family: 'Sarabun', sans-serif;">
+
+    <div class="history-container">
+        <div class="header-top">
+            <h2><i class="fas fa-history"></i> My Form History (ประวัติแบบฟอร์ม)</h2>
+            <a href="{{ url_for('index') }}" class="btn-generate"
+                style="background-color: #6c757d; width: auto; padding: 8px 15px; text-decoration: none; font-size: 14px;">
+                <i class="fas fa-arrow-left"></i> Back to Main
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div
+            style="padding: 10px; margin-bottom: 20px; border-radius: 5px; background-color: {% if category == 'success' %}#d4edda; color: #155724;{% elif category == 'danger' %}#f8d7da; color: #721c24;{% else %}#cce5ff; color: #004085;{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if histories %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Surgical Number</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in histories %}
+                <tr>
+                    <td>{{ h.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ h.surgical_number or "Not Specified" }}</td>
+                    <td>
+                        <a href="{{ url_for('load_history', history_id=h.id) }}" class="btn-load">
+                            <i class="fas fa-folder-open"></i> Load Form
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #777; padding: 30px 0;">No history found. Generate a PDF to save a form.
+        </p>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
