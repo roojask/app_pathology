@@ -77,13 +77,13 @@
 
                 <div class="form-row">
                     Received in formalin is a (
-                    <label class="circle-option {% if data and data.get('s1_side') == 'right' %}selected{% endif %}">
+                    <label class="circle-option">
                         <input type="radio" name="s1_side" value="right" {% if data and data.get('s1_side')=='right'
                             %}checked{% endif %}>
                         <span>right</span>
                     </label>
                     /
-                    <label class="circle-option {% if data and data.get('s1_side') == 'left' %}selected{% endif %}">
+                    <label class="circle-option">
                         <input type="radio" name="s1_side" value="left" {% if data and data.get('s1_side')=='left'
                             %}checked{% endif %}>
                         <span>left</span>
@@ -160,9 +160,7 @@
                     <label class="circle-option">
                         <input type="checkbox" name="s7_locs" value="{{ loc }}" {% if data and loc in
                             data.get('s7_locs', []) %}checked{% endif %}>
-                        <span
-                            style="{% if data and loc in data.get('s7_locs', []) %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
-                            loc }}</span>
+                        <span>{{ loc }}</span>
                     </label>
                     {% if not loop.last %}/{% endif %}
                     {% endfor %}
@@ -183,9 +181,7 @@
                     <label class="circle-option">
                         <input type="checkbox" name="s8_locs" value="{{ loc }}" {% if data and loc in
                             data.get('s8_locs', []) %}checked{% endif %}>
-                        <span
-                            style="{% if data and loc in data.get('s8_locs', []) %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
-                            loc }}</span>
+                        <span>{{ loc }}</span>
                     </label>
                     {% if not loop.last %}/{% endif %}
                     {% endfor %}
@@ -220,9 +216,7 @@
                     <label class="circle-option">
                         <input type="radio" name="s10_grammar" value="{{ grammar }}" {% if data and
                             data.get('s10_grammar')==grammar %}checked{% endif %}>
-                        <span
-                            style="{% if data and data.get('s10_grammar') == grammar %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
-                            grammar }}</span>
+                        <span>{{ grammar }}</span>
                     </label>
                     {% if not loop.last %}/{% endif %}
                     {% endfor %}
@@ -337,9 +331,7 @@
                     <label class="circle-option">
                         <input type="checkbox" name="s10_5_quadrant_vals" value="{{ loc }}" {% if data and loc in
                             data.get('s10_5_quadrant_vals', []) %}checked{% endif %}>
-                        <span
-                            style="{% if data and loc in data.get('s10_5_quadrant_vals', []) %}border: 1px solid red; border-radius: 50%; padding: 0 4px; color: red;{% endif %}">{{
-                            loc }}</span>
+                        <span>{{ loc }}</span>
                     </label>
                     {% if not loop.last %}/{% endif %}
                     {% endfor %}
@@ -354,7 +346,8 @@
                 </div>
 
                 <div class="form-row">
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <strong style="display: block; margin-bottom: 5px;">Tumor is located</strong>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc;">
                         <tr>
                             <td style="padding: 5px;">
                                 <input type="text" name="s11_deep" class="inline-input" style="width: 60px;"
@@ -388,11 +381,6 @@
                             </td>
                         </tr>
                     </table>
-                </div>
-
-                <div class="form-row">
-                    Tumor is located <input type="text" name="tumor_location_text" class="inline-input"
-                        style="width: 300px;">
                 </div>
 
                 <div class="form-row">
@@ -588,13 +576,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='script.js') }}?v=1.4"></script>
+
+    <script src="{{ url_for('static', filename='script.js') }}?v=1.7"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // รับค่า _low_confidence ที่ส่งมาจาก app.py
-            const lowConfidenceKeys = {{ data.get('_low_confidence', []) | tojson if data else '[]' | safe
-        }};
+            const lowConfidenceKeys = {{ data.get('_low_confidence', []) | tojson if data else '[]' | safe }};
 
         if (lowConfidenceKeys && lowConfidenceKeys.length > 0) {
             lowConfidenceKeys.forEach(key => {

@@ -1,28 +1,26 @@
-FROM python:3.9
+# ใช้ Python 3.11 ที่มีขนาดเล็ก
+FROM python:3.11-slim
 
-# 1. [เพิ่มตรงนี้] ติดตั้ง ffmpeg ในฐานะ Root ก่อน (สำคัญมาก!)
-USER root
-RUN apt-get update && apt-get install -y ffmpeg git && rm -rf /var/lib/apt/lists/*
+# ตั้งค่าโฟลเดอร์ทำงานในระบบ Cloud
+WORKDIR /app
 
-# 2. สร้าง User ใหม่ตามกฎ Hugging Face
-RUN useradd -m -u 1000 user
-USER user
-ENV HOME=/home/user \
-	PATH=/home/user/.local/bin:$PATH
+# อัปเดตระบบและติดตั้ง FFmpeg (จำเป็นมากสำหรับ Whisper)
+RUN apt-get update && \
+	apt-get install -y ffmpeg && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
-WORKDIR $HOME/app
+# ก๊อปปี้ไฟล์ทั้งหมดในโปรเจกต์เรา ขึ้นไปบน Cloud
+COPY . .
 
-# 3. ลง Library Python
-COPY --chown=user requirements.txt .
+# ติดตั้งไลบรารีจาก requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4. ก๊อปปี้ไฟล์งาน
-COPY --chown=user . .
+# โหลดสมองกล NLP (spaCy) ล่วงหน้า
+RUN python -m spacy download en_core_web_sm
 
-# 5. สร้างโฟลเดอร์สำหรับเก็บไฟล์
-RUN mkdir -p uploads outputs
-
-# 6. เปิดพอร์ต 7860
+# เปิด Port 7860
 EXPOSE 7860
 
+# คำสั่งรันแอปพลิเคชัน
 CMD ["python", "app.py"]

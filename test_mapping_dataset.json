@@ -1,18 +1,20 @@
 [
     {
-        "id": "mapping_case_01",
-        "input_text": "Received in formalin is a right modified radical mastectomy specimen measuring 18 by 9 by 6 centimeters. The skin ellipse, 15 by 7 centimeters, appears normal. The nipple is everted. There is an infiltrative firm yellow-white mass, 3.6 by 3 by 2.8 centimeters located in lower outer quadrant. Tumor is located 0.7 centimeters from deep margin, 3.5 centimeters from superior margin, 1 centimeter from inferior margin, 8 centimeters from medial margin, 5 centimeters from lateral margin, and 0.4 centimeters from skin. The remaining of breast tissue is unremarkable. Representative sections are submitted as A1-1 nipple, A2-1 to A4-1 equal mass, A5-1 equal deep resected margin with mass, A6-1 equal inferior resected margin with mass.",
-        "expected_data": {
+        "report_id": "case_01_perfect_standard_right",
+        "description": "เคสปกติ 01: พูดชัดเจน ตามลำดับ (Baseline - Right Modified)",
+        "transcription": "Surgical number S-24-1001. Received in formalin is a right modified radical mastectomy specimen. Measuring 12 by 10 by 5 cm. The skin ellipse is 8 by 4 cm and appears normal. The nipple is everted. There is an infiltrative firm yellow white mass 3 by 2 by 2 cm located in the upper outer quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1001",
             "s1_side": "right",
             "s2_proc": "modified",
             "s3_dims": [
-                "18",
-                "9",
-                "6"
+                "12",
+                "10",
+                "5"
             ],
             "s5_dims": [
-                "15",
-                "7"
+                "8",
+                "4"
             ],
             "s5_appears_normal": true,
             "s9_val": [
@@ -20,134 +22,986 @@
             ],
             "s10_infiltrative": true,
             "s10_inf_dims": [
-                "3.6",
                 "3",
-                "2.8"
+                "2",
+                "2"
             ],
-            "s10_grammar": "is an",
             "s10_5_quadrant_check": true,
             "s10_5_quadrant_vals": [
-                "lower",
-                "outer"
-            ],
-            "s11_deep": "0.7",
-            "s11_superior": "3.5",
-            "s11_inferior": "1",
-            "s11_medial": "8",
-            "s11_lateral": "5",
-            "s11_skin": "0.4",
-            "s13_type": "unremarkable",
-            "sections": {
-                "= nipple": {
-                    "code": "A1-1",
-                    "extra": ""
-                },
-                "= mass": {
-                    "code": "A2-1-A4-1",
-                    "extra": ""
-                },
-                "= deep resected margin": {
-                    "code": "A5-1",
-                    "extra": "with mass"
-                },
-                "= nearest resected margin": {
-                    "code": "A6-1",
-                    "extra": "with mass"
-                }
-            }
+                "upper outer"
+            ]
         }
     },
     {
-        "id": "mapping_case_02",
-        "input_text": "Surgical number S-24-999. The specimen is received from the right side. The procedure is simple mastectomy. Specimen measuring 15 by 12 by 5 centimeters. The breast tissue shows an ulceration 4 by 3 centimeters at lower outer quadrant. The uninvolved breast tissue ratio of approximately 3 to 1. There are multiple lymph nodes ranging from 1.5 cm to 0.5 cm in diameter. Representative sections are submitted as A5 axillary lymph nodes.",
-        "expected_data": {
-            "s0_surgical_no": "S-24-999",
-            "s1_side": "right",
+        "report_id": "case_02_perfect_standard_left",
+        "description": "เคสปกติ 02: พูดชัดเจน ตามลำดับ (Baseline - Left Simple)",
+        "transcription": "Surgical number S-24-1002. Left simple mastectomy. Specimen measures 10 x 8 x 4 cm. Skin ellipse is 5 x 3 cm. Nipple is retracted. Infiltrative mass measures 2.5 x 2 x 1.5 cm in the lower inner quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1002",
+            "s1_side": "left",
             "s2_proc": "simple",
+            "s3_dims": [
+                "10",
+                "8",
+                "4"
+            ],
+            "s5_dims": [
+                "5",
+                "3"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2.5",
+                "2",
+                "1.5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower inner"
+            ]
+        }
+    },
+    {
+        "report_id": "case_03_standard_with_lymph",
+        "description": "เคสปกติ 03: มีการบรรยายต่อมน้ำเหลืองที่รักแร้",
+        "transcription": "S-24-1003. Right modified radical mastectomy measuring 15 x 12 x 5 cm. Axillary tail is 6 x 4 x 2 cm. Skin is 9 x 4 cm. Nipple everted. Infiltrative mass 4 x 3 x 2 cm, central quadrant. 12 lymph nodes are found, ranging from 0.5 to 1.5 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1003",
+            "s1_side": "right",
+            "s2_proc": "modified",
             "s3_dims": [
                 "15",
                 "12",
                 "5"
             ],
-            "s8_check": true,
-            "s8_dims": [
+            "s4_check": true,
+            "s4_dims": [
+                "6",
                 "4",
-                "3"
+                "2"
             ],
-            "s8_locs": [
-                "lower",
-                "outer"
+            "s5_dims": [
+                "9",
+                "4"
             ],
-            "s12_check": true,
-            "s12_val_left": "3",
-            "s12_val_right": "1",
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ],
             "s14_check": true,
-            "s14_min": "1.5",
-            "s14_max": "0.5",
-            "sections": {
-                "= axillary lymph nodes": {
-                    "code": "A5",
-                    "extra": ""
-                }
-            }
+            "s14_num": "12",
+            "s14_min": "0.5",
+            "s14_max": "1.5"
         }
     },
     {
-        "id": "mapping_case_03",
-        "input_text": "Received in formalin is a left modified radical mastectomy specimen measuring 18 by 9 by 6 centimeters shows an old surgical scar 7 centimeters in length at upper inner quadrant. The nipple shows ulceration. There are multiple well-defined firm white mass with slit-like appearance, 1 by 2 by 3 centimeters. Previous surgical cavity with adjacent fibrous tissue, 1 by 5 by 7 centimeters, and a firm yellow-white residual mass, 5 by 9 by 3 centimeters, located beneath the scar. Tumor is located 0.7 centimeters from deep margin. Representative sections are submitted as A2 old biopsy cavity with fibrosis, A21-A41 equals sampling upper inner quadrant.",
-        "expected_data": {
+        "report_id": "case_04_standard_simple_lymph",
+        "description": "เคสปกติ 04: Simple Mastectomy พร้อมพบต่อมน้ำเหลือง",
+        "transcription": "S-24-1004. Left simple mastectomy, 11 x 9 x 4 cm. Skin ellipse 7 x 3 cm. Nipple everted. Infiltrative mass 2 x 2 x 1 cm, upper inner quadrant. I found 3 lymph nodes, from 0.2 to 0.8 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1004",
             "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "11",
+                "9",
+                "4"
+            ],
+            "s5_dims": [
+                "7",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2",
+                "2",
+                "1"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper inner"
+            ],
+            "s14_check": true,
+            "s14_num": "3",
+            "s14_min": "0.2",
+            "s14_max": "0.8"
+        }
+    },
+    {
+        "report_id": "case_05_standard_large_mass",
+        "description": "เคสปกติ 05: ก้อนเนื้อขนาดใหญ่ ตำแหน่ง Lower Outer",
+        "transcription": "S-24-1005. Right modified radical mastectomy. Specimen is 18 x 14 x 6 cm. Skin is 12 x 5 cm. Nipple retracted. There is a large infiltrative mass 8 x 6 x 5 cm in the lower outer quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1005",
+            "s1_side": "right",
             "s2_proc": "modified",
             "s3_dims": [
                 "18",
-                "9",
+                "14",
                 "6"
             ],
-            "s6_check": true,
-            "s7_len": "7",
-            "s7_locs": [
-                "upper",
-                "inner"
+            "s5_dims": [
+                "12",
+                "5"
             ],
             "s9_val": [
-                "ulceration"
+                "retracted"
             ],
-            "s10_well": true,
-            "s10_well_dims": [
-                "1",
-                "2",
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "8",
+                "6",
+                "5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower outer"
+            ]
+        }
+    },
+    {
+        "report_id": "case_06_standard_no_lymph",
+        "description": "เคสปกติ 06: ระบุชัดเจนว่าไม่พบต่อมน้ำเหลือง",
+        "transcription": "S-24-1006. Left simple mastectomy. 13 x 10 x 4 cm. Skin ellipse 8 x 3 cm. Nipple everted. Infiltrative mass 3 x 2.5 x 2 cm, upper outer quadrant. No lymph nodes identified in the fat.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1006",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "13",
+                "10",
+                "4"
+            ],
+            "s5_dims": [
+                "8",
                 "3"
             ],
-            "s10_prev1": true,
-            "s10_prev1_dims": [
-                "1",
-                "5",
-                "7"
+            "s9_val": [
+                "everted"
             ],
-            "s10_prev2": true,
-            "s10_prev2_cavity_dims": [
-                "1",
-                "5",
-                "7"
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3",
+                "2.5",
+                "2"
             ],
-            "s10_prev2_mass_dims": [
-                "5",
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ],
+            "s14_check": false
+        }
+    },
+    {
+        "report_id": "case_07_decimal_dimensions",
+        "description": "เคสความท้าทาย 01: เน้นตัวเลขทศนิยมทั้งหมด",
+        "transcription": "S-24-1007. Right modified radical mastectomy. Dimensions are 14.5 x 11.5 x 4.5 cm. Axillary content is 5.5 x 3.5 x 2.0 cm. Skin is 8.5 x 3.5 cm. Nipple everted. Infiltrative mass 2.5 x 2.0 x 1.5 cm in central quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1007",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "14.5",
+                "11.5",
+                "4.5"
+            ],
+            "s4_check": true,
+            "s4_dims": [
+                "5.5",
+                "3.5",
+                "2.0"
+            ],
+            "s5_dims": [
+                "8.5",
+                "3.5"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2.5",
+                "2.0",
+                "1.5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ]
+        }
+    },
+    {
+        "report_id": "case_08_out_of_order_mass_first",
+        "description": "เคสความท้าทาย 02: พูดสลับลำดับ เอาก้อนเนื้อขึ้นก่อนชิ้นเนื้อรวม",
+        "transcription": "S-24-1008. We have an infiltrative mass 3 by 3 by 2 cm in the lower inner quadrant. This is from a left modified radical mastectomy. Specimen size is 14 x 10 x 5 cm. Skin is 9 x 4 cm, nipple everted. 8 lymph nodes found, 0.3 to 1.1 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1008",
+            "s1_side": "left",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "14",
+                "10",
+                "5"
+            ],
+            "s5_dims": [
                 "9",
+                "4"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3",
+                "3",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower inner"
+            ],
+            "s14_check": true,
+            "s14_num": "8",
+            "s14_min": "0.3",
+            "s14_max": "1.1"
+        }
+    },
+    {
+        "report_id": "case_09_out_of_order_quadrant_first",
+        "description": "เคสความท้าทาย 03: พูดตำแหน่ง Quadrant เป็นประโยคแรกสุด",
+        "transcription": "S-24-1009. In the upper outer quadrant, there is a 3 x 2 x 2 cm infiltrative mass. Specimen is a right simple mastectomy measuring 13 x 10 x 4 cm. Skin ellipse is 8 x 3 cm. Nipple everted.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1009",
+            "s1_side": "right",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "13",
+                "10",
+                "4"
+            ],
+            "s5_dims": [
+                "8",
                 "3"
             ],
-            "s10_grammar": "are multiple",
-            "s10_5_scar": true,
-            "s11_deep": "0.7",
-            "sections": {
-                "= old biopsy cavity with fibrosis": {
-                    "code": "A2",
-                    "extra": ""
-                },
-                "= sampling upper inner quadrant": {
-                    "code": "A2-1-A4-1",
-                    "extra": ""
-                }
-            }
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3",
+                "2",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ]
+        }
+    },
+    {
+        "report_id": "case_10_self_correction_dims",
+        "description": "เคสความท้าทาย 04: พูดแก้คำผิดขนาดชิ้นเนื้อรวมแบบทันที",
+        "transcription": "Surgical number S-24-1010. Left simple mastectomy. Specimen measures 10 x 8 x 4 cm... wait, sorry, correction, 11 x 8 x 5 cm. Skin ellipse is 5 x 2 cm. Nipple is everted. Found an infiltrative mass 2.5 x 2 x 1.5 cm located in central quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1010",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "11",
+                "8",
+                "5"
+            ],
+            "s5_dims": [
+                "5",
+                "2"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2.5",
+                "2",
+                "1.5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ]
+        }
+    },
+    {
+        "report_id": "case_11_self_correction_proc",
+        "description": "เคสความท้าทาย 05: แก้คำผิดชนิดการผ่าตัดและซ้ายขวา",
+        "transcription": "S-24-1011. Received a left... correction, right simple mastectomy. Actually, make that right modified radical mastectomy. Size is 15 x 12 x 6 cm. Skin is 10 x 5 cm. Nipple retracted. Mass is 5 x 4 x 3 cm infiltrative in upper inner quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1011",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "15",
+                "12",
+                "6"
+            ],
+            "s5_dims": [
+                "10",
+                "5"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "5",
+                "4",
+                "3"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper inner"
+            ]
+        }
+    },
+    {
+        "report_id": "case_12_double_correction",
+        "description": "เคสความท้าทาย 06: แก้คำผิดซ้อนกัน 2 ครั้ง",
+        "transcription": "S-24-1012. Left modified radical mastectomy. Specimen size 10 x 8 x 4... sorry 12 x 8 x 4... actually 12 x 9 x 4 cm. Skin 6 x 3 cm. Nipple retracted. Infiltrative mass 2 x 2 x 1 cm in upper inner quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1012",
+            "s1_side": "left",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "12",
+                "9",
+                "4"
+            ],
+            "s5_dims": [
+                "6",
+                "3"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2",
+                "2",
+                "1"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper inner"
+            ]
+        }
+    },
+    {
+        "report_id": "case_13_correction_lymph",
+        "description": "เคสความท้าทาย 07: แก้คำผิดจำนวนต่อมน้ำเหลือง",
+        "transcription": "S-24-1013. Right simple mastectomy, 14 x 10 x 5 cm. Skin 8 x 4 cm. Nipple everted. Infiltrative mass 3 x 2 x 2 cm, lower outer quadrant. Lymph nodes... I see 10 nodes... no, wait, there are 12 lymph nodes. Size from 0.5 to 2.5 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1013",
+            "s1_side": "right",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "14",
+                "10",
+                "5"
+            ],
+            "s5_dims": [
+                "8",
+                "4"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3",
+                "2",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower outer"
+            ],
+            "s14_check": true,
+            "s14_num": "12",
+            "s14_min": "0.5",
+            "s14_max": "2.5"
+        }
+    },
+    {
+        "report_id": "case_14_missing_mass_dims",
+        "description": "เคสความท้าทาย 08: จงใจข้ามขนาดก้อนเนื้อ (ทดสอบ Highlighting)",
+        "transcription": "S-24-1014. Right modified radical mastectomy. Overall size 14 x 11 x 4 cm. Skin ellipse 7 x 3 cm, appears normal. Nipple everted. There is an infiltrative firm yellow-white mass located in upper inner quadrant. Lymph nodes are not found.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1014",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "14",
+                "11",
+                "4"
+            ],
+            "s5_dims": [
+                "7",
+                "3"
+            ],
+            "s5_appears_normal": true,
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper inner"
+            ],
+            "s14_check": false
+        }
+    },
+    {
+        "report_id": "case_15_missing_skin_dims",
+        "description": "เคสความท้าทาย 09: จงใจข้ามขนาดผิวหนัง",
+        "transcription": "S-24-1015. Left simple mastectomy. Specimen is 14 x 10 x 5 cm. Skin ellipse is present and unremarkable. Nipple is retracted. Infiltrative mass 4 x 3 x 2 cm in lower inner quadrant. 9 lymph nodes, 0.5 to 1.0 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1015",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "14",
+                "10",
+                "5"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower inner"
+            ],
+            "s14_check": true,
+            "s14_num": "9",
+            "s14_min": "0.5",
+            "s14_max": "1.0"
+        }
+    },
+    {
+        "report_id": "case_16_no_mass_identified",
+        "description": "เคสความท้าทาย 10: ไม่พบก้อนเนื้องอกเลย (ทดสอบไม่ให้เกิดข้อมูลเท็จ)",
+        "transcription": "S-24-1016. Right simple mastectomy. Specimen measures 11 x 9 x 4 cm. Skin ellipse 7 x 3 cm. Nipple everted. The breast parenchyma is entirely fibrocystic. No discrete mass is identified.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1016",
+            "s1_side": "right",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "11",
+                "9",
+                "4"
+            ],
+            "s5_dims": [
+                "7",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": false
+        }
+    },
+    {
+        "report_id": "case_17_synonyms_tissue",
+        "description": "เคสความท้าทาย 11: ใช้คำพ้องความหมาย (Tissue, Cutaneous, Lesion, Papilla)",
+        "transcription": "S-24-1017. Right modified radical mastectomy. The entire tissue measures 13 by 11 by 4 cm. The cutaneous ellipse is 8 by 3 cm, appears normal. Papilla is everted. A firm infiltrating lesion is seen, 3 by 2 by 1.5 cm at central quadrant. Axillary fat contains 14 nodes, 0.4 to 1.8 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1017",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "13",
+                "11",
+                "4"
+            ],
+            "s5_dims": [
+                "8",
+                "3"
+            ],
+            "s5_appears_normal": true,
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3",
+                "2",
+                "1.5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ],
+            "s14_check": true,
+            "s14_num": "14",
+            "s14_min": "0.4",
+            "s14_max": "1.8"
+        }
+    },
+    {
+        "report_id": "case_18_interruption",
+        "description": "เคสความท้าทาย 12: มีบทสนทนาแทรก",
+        "transcription": "S-24-1018. Left simple mastectomy, 10 x 9 x 4 cm. Can you hand me the ruler? Thanks. Skin ellipse is 5 x 3 cm. Nipple is everted. Infiltrative mass is 2 x 1 x 1 cm in lower outer quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1018",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "10",
+                "9",
+                "4"
+            ],
+            "s5_dims": [
+                "5",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2",
+                "1",
+                "1"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower outer"
+            ]
+        }
+    },
+    {
+        "report_id": "case_19_hesitation_light",
+        "description": "เคสความท้าทาย 13: พูดตะกุกตะกัก มีคำว่า umm, uh",
+        "transcription": "Umm, surgical number is S-24-1019. We received a... uh... right modified radical mastectomy. Measuring, let's see, 15 by 10 by 6 cm. The skin ellipse is... uh... 9 by 4 cm. Nipple is retracted. There is a firm mass, it looks infiltrative, measuring 4 by 3 by 3 cm in the lower inner quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1019",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "15",
+                "10",
+                "6"
+            ],
+            "s5_dims": [
+                "9",
+                "4"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "3"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower inner"
+            ]
+        }
+    },
+    {
+        "report_id": "case_20_extreme_hesitation",
+        "description": "เคสความท้าทาย 14: พูดเว้นช่วงและตะกุกตะกักอย่างหนัก",
+        "transcription": "Surgical number S-24-1020. This is a... uh... left simple mastectomy. Measuring about... 12 by 8 by 4 cm. The skin is, let's see, 6 by 3 cm. Nipple looks everted. There's a mass, infiltrative, measuring uh 2 by 2 by 2 cm in the... upper outer quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1020",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "12",
+                "8",
+                "4"
+            ],
+            "s5_dims": [
+                "6",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2",
+                "2",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ]
+        }
+    },
+    {
+        "report_id": "case_21_fast_compact",
+        "description": "เคสความท้าทาย 15: พูดรวบและเร็วมาก ตัดคำเชื่อมทิ้ง",
+        "transcription": "S-24-1021 right simple mastectomy 9 x 7 x 4 cm. Skin 4 x 2 cm normal. Nipple everted. Infiltrative mass 1.5 x 1 x 1 cm upper outer quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1021",
+            "s1_side": "right",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "9",
+                "7",
+                "4"
+            ],
+            "s5_dims": [
+                "4",
+                "2"
+            ],
+            "s5_appears_normal": true,
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "1.5",
+                "1",
+                "1"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ]
+        }
+    },
+    {
+        "report_id": "case_22_mixed_standard",
+        "description": "เคสผสม 01: เน้นความสมบูรณ์ของโครงสร้าง",
+        "transcription": "Specimen S-24-1022. Received left modified radical mastectomy measuring 13 by 9 by 5 cm. Attached axillary content measures 6 by 4 by 2 cm. Skin ellipse is 8 by 3 cm. Nipple is everted. Infiltrative mass is 3.5 by 3 by 2 cm at the upper outer quadrant. I found exactly 12 lymph nodes, the size ranges from 0.4 up to 2.0 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1022",
+            "s1_side": "left",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "13",
+                "9",
+                "5"
+            ],
+            "s4_check": true,
+            "s4_dims": [
+                "6",
+                "4",
+                "2"
+            ],
+            "s5_dims": [
+                "8",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3.5",
+                "3",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ],
+            "s14_check": true,
+            "s14_num": "12",
+            "s14_min": "0.4",
+            "s14_max": "2.0"
+        }
+    },
+    {
+        "report_id": "case_23_mixed_correction_quadrant",
+        "description": "เคสผสม 02: แก้ไขตำแหน่ง Quadrant",
+        "transcription": "S-24-1023. Right simple mastectomy. Dimensions 11 x 8 x 4 cm. Skin 6 x 3 cm. Nipple everted. Infiltrative mass 2 x 2 x 2 cm in the central quadrant... correction, upper inner quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1023",
+            "s1_side": "right",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "11",
+                "8",
+                "4"
+            ],
+            "s5_dims": [
+                "6",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "2",
+                "2",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper inner"
+            ]
+        }
+    },
+    {
+        "report_id": "case_24_mixed_missing_nipple",
+        "description": "เคสผสม 03: ข้ามข้อมูล Nipple",
+        "transcription": "S-24-1024. Left modified radical mastectomy, 14 x 10 x 5 cm. Skin ellipse is 7 x 4 cm. Found an infiltrative mass 4 x 3 x 2 cm in lower outer quadrant. 10 lymph nodes, 0.5 to 1.5 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1024",
+            "s1_side": "left",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "14",
+                "10",
+                "5"
+            ],
+            "s5_dims": [
+                "7",
+                "4"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower outer"
+            ],
+            "s14_check": true,
+            "s14_num": "10",
+            "s14_min": "0.5",
+            "s14_max": "1.5"
+        }
+    },
+    {
+        "report_id": "case_25_mixed_large_lymph",
+        "description": "เคสผสม 04: ต่อมน้ำเหลืองมีขนาดใหญ่เป็นพิเศษ",
+        "transcription": "S-24-1025. Right modified radical mastectomy. Specimen 16 x 14 x 6 cm. Axillary tail 8 x 5 x 3 cm. Skin 10 x 4 cm. Nipple retracted. Infiltrative mass 5 x 4 x 3 cm, upper outer quadrant. 15 lymph nodes, ranging up to 3.5 cm minimum 1.0 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1025",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "16",
+                "14",
+                "6"
+            ],
+            "s4_check": true,
+            "s4_dims": [
+                "8",
+                "5",
+                "3"
+            ],
+            "s5_dims": [
+                "10",
+                "4"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "5",
+                "4",
+                "3"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ],
+            "s14_check": true,
+            "s14_num": "15",
+            "s14_min": "1.0",
+            "s14_max": "3.5"
+        }
+    },
+    {
+        "report_id": "case_26_mixed_small_lesion",
+        "description": "เคสผสม 05: ก้อนเนื้อขนาดเล็กมาก",
+        "transcription": "S-24-1026. Left simple mastectomy. 9 x 8 x 3 cm. Skin 4 x 2 cm. Nipple everted. Tiny infiltrative mass 0.8 x 0.5 x 0.5 cm in central quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1026",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "9",
+                "8",
+                "3"
+            ],
+            "s5_dims": [
+                "4",
+                "2"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "0.8",
+                "0.5",
+                "0.5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ]
+        }
+    },
+    {
+        "report_id": "case_27_mixed_out_of_order_all",
+        "description": "เคสผสม 06: สลับลำดับทุกอย่างมั่วไปหมด",
+        "transcription": "S-24-1027. Nipple is retracted. Skin is 7 x 3 cm. This is a right modified radical mastectomy. Mass is 4 x 3 x 2 cm infiltrative in lower inner quadrant. Specimen overall is 14 x 11 x 5 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1027",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "14",
+                "11",
+                "5"
+            ],
+            "s5_dims": [
+                "7",
+                "3"
+            ],
+            "s9_val": [
+                "retracted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "2"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "lower inner"
+            ]
+        }
+    },
+    {
+        "report_id": "case_28_mixed_correction_side_and_mass",
+        "description": "เคสผสม 07: แก้ไขทั้งข้างซ้ายขวา และขนาดก้อนเนื้อ",
+        "transcription": "S-24-1028. Right simple mastectomy... correction, left simple mastectomy. 12 x 10 x 4 cm. Skin 6 x 3 cm. Nipple everted. Infiltrative mass 3 x 2 x 1... wait, 3.5 x 2 x 1.5 cm in upper outer quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1028",
+            "s1_side": "left",
+            "s2_proc": "simple",
+            "s3_dims": [
+                "12",
+                "10",
+                "4"
+            ],
+            "s5_dims": [
+                "6",
+                "3"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "3.5",
+                "2",
+                "1.5"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "upper outer"
+            ]
+        }
+    },
+    {
+        "report_id": "case_29_mixed_interruption_and_missing",
+        "description": "เคสผสม 08: มีคนแทรก + ข้อมูลขาดหาย",
+        "transcription": "S-24-1029. Right modified radical mastectomy. Measuring 15 x 12 x 5 cm. Hey, is the frozen section ready? Ok. Nipple is everted. Infiltrative mass 4 x 3 x 3 cm in central quadrant.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1029",
+            "s1_side": "right",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "15",
+                "12",
+                "5"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "3"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ]
+        }
+    },
+    {
+        "report_id": "case_30_ultimate_stress_test",
+        "description": "The Ultimate Stress Test 30: เร็ว + สลับลำดับ + แก้คำผิด + ตะกุกตะกัก",
+        "transcription": "S-24-1030. Uh, left simple... wait, modified radical mastectomy. Size is 14 x 11 x 5. Mass is in central quadrant, infiltrative, 4 x 3 x 2... correction 4 x 3 x 3 cm. Skin is 9 x 4 cm, nipple everted. Oh, and 11 lymph nodes found, 0.5 to 1.5 cm.",
+        "expected_output": {
+            "s0_surgical_no": "S-24-1030",
+            "s1_side": "left",
+            "s2_proc": "modified",
+            "s3_dims": [
+                "14",
+                "11",
+                "5"
+            ],
+            "s5_dims": [
+                "9",
+                "4"
+            ],
+            "s9_val": [
+                "everted"
+            ],
+            "s10_infiltrative": true,
+            "s10_inf_dims": [
+                "4",
+                "3",
+                "3"
+            ],
+            "s10_5_quadrant_check": true,
+            "s10_5_quadrant_vals": [
+                "central"
+            ],
+            "s14_check": true,
+            "s14_num": "11",
+            "s14_min": "0.5",
+            "s14_max": "1.5"
         }
     }
 ]

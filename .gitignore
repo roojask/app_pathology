@@ -25,3 +25,25 @@ output/
 *.docx
 .vscode/
 .idea/
+
+# Models and Large Binaries
+benchmarks_and_tools/
+vosk-model/
+ffmpeg-8.0.1/
+ffmpeg.exe
+PathoVoiceAssistant.exe
+
+# App Data
+instance/*.db
+uploads/*
+!uploads/.gitkeep
+audio_cases/
+
+# Benchmark Results
+benchmark_results_all.json
+stt_benchmark_results.json
+eval_stt_cases.json
+wer_results.txt
+
+# Build Artifacts
+*.spec

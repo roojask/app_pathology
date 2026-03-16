@@ -89,31 +89,43 @@ print("✅ Whisper model loaded!")
 
 def normalize_text(text):
     t = text.lower()
-    t = t.replace(" by ", " x ").replace(" times ", " x ")
+    
+    # --- 1. แปลงคำศัพท์เชื่อม (by, times เป็น x) ---
+    t = re.sub(r"\bby\b", "x", t)
+    t = re.sub(r"\btimes\b", "x", t)
+    
+    # --- 2. ระบบแก้คำผิดอัจฉริยะ (Smart Self-Correction) ---
+    # เพิ่มคำว่า "weight" (ที่ Whisper ฟังเพี้ยนจาก wait) และดักจับ cm/centimeters ที่คั่นอยู่
+    t = re.sub(r"([\d.]+\s*x\s*[\d.]+(?:\s*x\s*[\d.]+)?)(?:[\s\.,]*(?:cm|centimeters|mm))?[\s\.,]*(?:sorry|wait|weight|correction|actually|no wait)+[\s\.,]*(?:measuring|size is|it is|actually)?\s*", "", t)
+    
+    # --- 3. แปลงหน่วยและคำพ้องความหมาย (Synonyms) ---
     t = t.replace("centimeters", "cm").replace("centimeter", "cm")
     t = t.replace("millimeter", "mm").replace("millimeters", "mm")
     t = t.replace("equal", "=").replace("equals", "=")
     
-    # FIX: แก้ ASR ฟัง "8" เป็น "x" ในบริบทระยะห่าง (เช่น x cm from)
     t = re.sub(r"\bx\s+(?:cm|centimeters?)\s+from", "8 cm from", t)
-    # --- Specific Fixes (แก้คำผิด) ---
     t = t.replace("mast", "mass") 
     t = t.replace("medium margin", "medial margin")
     t = t.replace("massectomy", "mastectomy")
     t = t.replace("slit-like", "slit like")
     t = t.replace("the resected", "deep resected")
     
-    # FIX: แก้ ASR error "nipple is inverted" -> "nipple is everted"
-    t = t.replace("nipple is inverted", "nipple is everted")
+    # Synonyms (Medical Terms)
+    t = t.replace("papilla", "nipple")
+    t = t.replace("tissue", "specimen")
+    t = t.replace("cutaneous", "skin")
+    t = t.replace("lesion", "mass")
+    t = t.replace("tumor", "mass")
     
     return t
 
 def format_section_code(code):
-    code = re.sub(r"\b(to|and|-)\b", " - ", code, flags=re.IGNORECASE)
+    code = re.sub(r"\b(?:to|and)\b", "-", code, flags=re.IGNORECASE)
+    code = code.replace(",", "-")
     code = re.sub(r"([A-Za-z]\d+)([A-Za-z])", r"\1 \2", code)
     code = code.upper()
     
-    parts = re.split(r"[;,]", code)
+    parts = re.split(r"[;]", code)
     formatted_parts = []
     for p in parts:
         if not p: continue
@@ -132,11 +144,25 @@ def extract_data_15_sections(text):
     t = normalize_text(text)
     data = {"_low_confidence": []}
 
-    m = re.search(r"surgical number\s+([a-zA-Z0-9\/-]+)", t)
-    if m: data["s0_surgical_no"] = m.group(1).upper()
+    # ==========================================
+    # 1. Surgical Number 
+    # ==========================================
+    m = re.search(r"(?:surgical number|specimen|s-)?\s*(?:is\s+)?([sS]?\s*-?\s*\d{2}\s*-?\s*\d{4})", t, re.IGNORECASE)
+    if m: 
+        raw_s = m.group(1).replace(" ", "").upper()
+        if not raw_s.startswith("S-"):
+            if raw_s.startswith("S"): raw_s = f"S-{raw_s[1:]}"
+            else: raw_s = f"S-{raw_s}"
+        data["s0_surgical_no"] = raw_s
+        t = t.replace(m.group(1), "") 
 
-    if "right" in t: data["s1_side"] = "right"
-    elif "left" in t: data["s1_side"] = "left"
+    # ==========================================
+    # 2. Side & Procedure (แก้ไขให้ดึงคำตอบล่าสุดเพื่อแก้ Self-correction)
+    # ==========================================
+    right_idx = t.rfind("right")
+    left_idx = t.rfind("left")
+    if right_idx != -1 or left_idx != -1:
+        data["s1_side"] = "right" if right_idx > left_idx else "left"
 
     if "modified radical" in t: data["s2_proc"] = "modified"
     elif "simple mastectomy" in t: data["s2_proc"] = "simple"
@@ -145,172 +171,143 @@ def extract_data_15_sections(text):
         if m: 
             data["s2_proc"] = "other"
             data["s2_other_text"] = m.group(1).strip()
-            data["_low_confidence"].append("s2_other_text")
-
-    m = re.search(r"specimen measuring\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-    if m: data["s3_dims"] = [m.group(1), m.group(2), m.group(3)]
-    elif "measuring" in t:
-        data["_low_confidence"].extend(["s3_dims_0", "s3_dims_1", "s3_dims_2"])
-        
-    if "axillary content" in t:
-        data["s4_check"] = True
-        m = re.search(r"axillary content.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-        if m: data["s4_dims"] = [m.group(1), m.group(2), m.group(3)]
-
-    m = re.search(r"skin ellipse.*?\s+([\d.]+)\s*x\s*([\d.]+)", t)
-    if m: data["s5_dims"] = [m.group(1), m.group(2)]
-
-    if "appears normal" in t: data["s5_appears_normal"] = True
-
-    if "scar" in t:
-        data["s6_check"] = True 
-        m = re.search(r"scar\s+([\d.]+)\s*cm", t)
-        if m: data["s7_len"] = m.group(1)
-        
-        scar_idx = t.find("scar")
-        if scar_idx != -1:
-            context = t[scar_idx:scar_idx+100]
-            locs = []
-            for l in ["upper", "lower", "inner", "outer", "areola"]:
-                if l in context: locs.append(l)
-            if locs: data["s7_locs"] = locs
-
-    ulcer_match = re.search(r"ulceration", t)
-    if ulcer_match:
-        start_idx = t.rfind("\n", 0, ulcer_match.start())
-        if start_idx == -1: start_idx = 0
-            
-        preceding = t[start_idx:ulcer_match.start()]
-        if "nipple" not in preceding:
-            data["s8_check"] = True
-            m = re.search(r"ulceration\s+([\d.]+)\s*x\s*([\d.]+)", t)
-            if m: data["s8_dims"] = [m.group(1), m.group(2)]
-            
-            context = t[ulcer_match.start():ulcer_match.end()+100]
-            locs = []
-            for l in ["upper", "lower", "inner", "outer", "areola"]:
-                if l in context: locs.append(l)
-            if locs: data["s8_locs"] = locs
-
-    s9_vals = []
-    t_lower = t.lower()
-    if "nipple" in t_lower:
-         if "everted" in t_lower: s9_vals.append("everted")
-         if "inverted" in t_lower: s9_vals.append("inverted")
-         
-         for m in re.finditer("ulceration", t_lower):
-              start = m.start()
-              context = t_lower[max(0, start-50):start]
-              if "nipple" in context:
-                   if "ulceration" not in s9_vals: s9_vals.append("ulceration")
-              elif "shows" in context and "an" not in context[-5:]: 
-                   if "ulceration" not in s9_vals: s9_vals.append("ulceration")
-    
-    if s9_vals: data["s9_val"] = s9_vals
-
+     
+    # ==========================================
+    # 3. Mass (Tumor/Lesion) - ดึงก่อนเพื่อไม่ให้กวนขนาดชิ้นเนื้อรวม
+    # ==========================================
     mass_count = 0
     mass_types = []
 
-    if "infiltrative" in t.lower():
-        mass_count += 1
+    if "no discrete mass" in t or "entirely fibrocystic" in t:
+        data["s10_infiltrative"] = False
+    elif "infiltrative" in t or "mass" in t:
         data["s10_infiltrative"] = True
-        mass_types.append("infiltrative")
-        m = re.search(r"infiltrative.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t, re.IGNORECASE)
-        if m: data["s10_inf_dims"] = [m.group(1), m.group(2), m.group(3)]
-
-    if "well" in t and "defined" in t:
         mass_count += 1
-        data["s10_well"] = True
-        mass_types.append("well")
-        m = re.search(r"well.*?defined.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-        if m: data["s10_well_dims"] = [m.group(1), m.group(2), m.group(3)]
-
-    if "previous surgical cavity" in t:
-        if "residual mass" not in t:
-            mass_count += 1
-            data["s10_prev1"] = True
-            mass_types.append("prev1")
-            m = re.search(r"previous surgical cavity.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-            if m: data["s10_prev1_dims"] = [m.group(1), m.group(2), m.group(3)]
-        else:
-            mass_count += 2
-            data["s10_prev1"] = True
-            mass_types.append("prev1")
-            m1 = re.search(r"previous surgical cavity.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-            if m1: data["s10_prev1_dims"] = [m1.group(1), m1.group(2), m1.group(3)]
-            
-            data["s10_prev2"] = True
-            mass_types.append("prev2")
-            if m1: data["s10_prev2_cavity_dims"] = [m1.group(1), m1.group(2), m1.group(3)]
-            m2 = re.search(r"residual mass.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
-            if not m2:
-                 m2 = re.search(r"residual mass.*?([\d.]+)\s*(?:x|by)\s*([\d.]+)\s*(?:x|by)\s*([\d.]+)", t)
-            if m2: data["s10_prev2_mass_dims"] = [m2.group(1), m2.group(2), m2.group(3)]
+        mass_types.append("infiltrative")
+        
+        # ดึงขนาดก้อนเนื้อโดยเช็คคำรอบข้าง
+        all_3d_dims = list(re.finditer(r"([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t))
+        mass_dim_match = None
+        
+        for m in reversed(all_3d_dims):
+            start, end = m.start(), m.end()
+            context = t[max(0, start-40) : min(len(t), end+40)]
+            if any(kw in context for kw in ["infiltrative", "mass", "lesion", "tumor"]):
+                mass_dim_match = m
+                break
+        
+        if mass_dim_match:
+            data["s10_inf_dims"] = [mass_dim_match.group(1).rstrip('.'), mass_dim_match.group(2).rstrip('.'), mass_dim_match.group(3).rstrip('.')]
+            # ลบขนาดก้อนเนื้อออกจากข้อความ เพื่อไม่ให้แย่งกับขนาดชิ้นเนื้อ (Specimen)
+            t = t[:mass_dim_match.start()] + " [MASS_DIMS] " + t[mass_dim_match.end():]
 
     if mass_count == 1:
         data["s10_grammar"] = "is an" if mass_types[0] == "infiltrative" else "is a"
-    elif mass_count == 2:
-        data["s10_grammar"] = "are two"
-    elif mass_count > 2:
-        data["s10_grammar"] = "are multiple"
 
-    if "beneath the nipple" in t: data["s10_5_nipple"] = True
-    if "beneath the scar" in t: data["s10_5_scar"] = True
-    if "central" in t and "portion" in t: data["s10_5_central"] = True
+    # ==========================================
+    # 4. Specimen Dimensions (ดึงก้อนตัวเลข 3D ที่เหลืออยู่)
+    # ==========================================
+    m_specs = list(re.finditer(r"(?:mastectomy|specimen|overall size|specimen size|total specimen|measuring|dimensions are)[\s\S]{0,60}?([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t, re.IGNORECASE))
     
-    locs = []
-    tumor_loc_match = re.search(r"(?:tumor|mass|located).*?(\bin\s+(?:the\s+)?(?:upper|lower|inner|outer)[\w\s]*?quadrant)", t)
-    
-    if tumor_loc_match:
-        loc_text = tumor_loc_match.group(1)
-        for q in ["upper", "lower", "inner", "outer"]:
-            if q in loc_text:
-                data["s10_5_quadrant_check"] = True
-                locs.append(q)
-    
-    if locs: data["s10_5_quadrant_vals"] = locs
+    if m_specs:
+        m = m_specs[-1] 
+        data["s3_dims"] = [m.group(1).rstrip('.'), m.group(2).rstrip('.'), m.group(3).rstrip('.')]
+    else:
+         generic_matches = list(re.finditer(r"(?<!-)(?<!\d)([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t, re.IGNORECASE))
+         if generic_matches:
+              m = generic_matches[0]
+              data["s3_dims"] = [m.group(1).rstrip('.'), m.group(2).rstrip('.'), m.group(3).rstrip('.')]
+              
+    # ==========================================
+    # 5. Axillary Content & Skin
+    # ==========================================
+    if "axillary content" in t or "axillary tail" in t:
+        data["s4_check"] = True
+        m = re.search(r"axillary.*?\s+([\d.]+)\s*x\s*([\d.]+)\s*x\s*([\d.]+)", t)
+        if m: data["s4_dims"] = [m.group(1).rstrip('.'), m.group(2).rstrip('.'), m.group(3).rstrip('.')]
 
-    t = t.replace("comma", ",")
-    t = t.replace("  ", " ") 
-    
-    m = re.search(r"(?<!tumor is\s)located.*?(?:in|at)\s+(?!(?:the)?\s*(?:upper|lower|inner|outer|central|nipple|scar))(.+?)(?:\.|$|tumor)", t)
-    if m:
-        candidate = m.group(1).strip()
-        if len(candidate) > 2 and "margin" not in candidate and not re.match(r"^[\d\s.,]+$", candidate):
-             data["s10_5_other"] = candidate
+    m = re.search(r"skin.*?\s+([\d.]+)\s*x\s*([\d.]+)", t)
+    if m: data["s5_dims"] = [m.group(1).rstrip('.'), m.group(2).rstrip('.')]
 
+    if "appears normal" in t or "unremarkable" in t or re.search(r"skin.*normal", t): 
+        data["s5_appears_normal"] = True
+
+    # ==========================================
+    # 6. Scars & Nipple (แยก everted, inverted, retracted ให้ชัดเจน)
+    # ==========================================
+    if "scar" in t:
+        data["s6_check"] = True 
+        m = re.search(r"scar\s+([\d.]+)\s*cm", t)
+        if m: data["s7_len"] = m.group(1).rstrip('.')
+        
+    ulcer_match = re.search(r"ulceration", t)
+    if ulcer_match:
+        data["s8_check"] = True
+        m = re.search(r"ulceration\s+([\d.]+)\s*x\s*([\d.]+)", t)
+        if m: data["s8_dims"] = [m.group(1).rstrip('.'), m.group(2).rstrip('.')]
+
+    s9_vals = []
+    if "everted" in t: s9_vals.append("everted")
+    if "inverted" in t: s9_vals.append("inverted")
+    if "retracted" in t: s9_vals.append("retracted")
+    if s9_vals: data["s9_val"] = s9_vals
+
+    # ==========================================
+    # 7. Quadrants
+    # ==========================================
+    tumor_loc_matches = list(re.finditer(r"(?:(?:in|at)\s+(?:the\s+)?)?(upper|lower|central)\s*(inner|outer)?\s*quadrant", t))
+    if tumor_loc_matches:
+        loc_text = tumor_loc_matches[-1].group(0)
+        locs = []
+        if "central" in loc_text: locs.append("central")
+        else:
+            if "upper" in loc_text: locs.append("upper")
+            if "lower" in loc_text: locs.append("lower")
+            if "inner" in loc_text: locs.append("inner")
+            if "outer" in loc_text: locs.append("outer")
+        
+        if locs:
+            data["s10_5_quadrant_check"] = True
+            data["s10_5_quadrant_vals"] = [" ".join(locs)]
+
+    # ==========================================
+    # 8. Margins
+    # ==========================================
     margins = ["deep", "superior", "inferior", "medial", "lateral", "skin"]
     for m_name in margins:
         regex = rf"([\d.]+)\s*cm\s*(?:from|at)?\s*{m_name}\s*margin"
         m = re.search(regex, t)
         if not m: regex = rf"{m_name}\s*margin\s*(?:is)?\s*([\d.]+)\s*cm"
         m = re.search(regex, t)
-        if m: data[f"s11_{m_name}"] = m.group(1)
+        if m: data[f"s11_{m_name}"] = m.group(1).rstrip('.')
         if m_name == "skin":
             m_skin = re.search(r"([\d.]+)\s*cm\s*from\s*skin", t)
-            if m_skin: data["s11_skin"] = m_skin.group(1)
+            if m_skin: data["s11_skin"] = m_skin.group(1).rstrip('.')
 
-    m = re.search(r"ratio.*?\b(\d+)\s*(?::|to)\s*(\d+)", t)
-    if m: 
-        data["s12_check"] = True
-        data["s12_val_left"] = m.group(1)
-        data["s12_val_right"] = m.group(2)
-
-    if "unremarkable" in t:
-        data["s13_type"] = "unremarkable"
-    elif "remaining of breast tissue" in t:
-         m = re.search(r"remaining of breast tissue (?:is|shows) (.+)", t)
-         if m: 
-             data["s13_type"] = "other"
-             data["s13_text"] = m.group(1).split('.')[0].split(',')[0]
-
-    if "lymph node" in t:
+    # ==========================================
+    # 9. Lymph Nodes (ดักจับทุกระยะ แม้จะสลับ Min/Max)
+    # ==========================================
+    if ("lymph node" in t or "nodes" in t) and "not found" not in t and "no lymph" not in t:
         data["s14_check"] = True
-        m = re.search(r"ranging from\s+([\d.]+).*?to\s+([\d.]+)", t)
-        if m: 
-            data["s14_min"] = m.group(1)
-            data["s14_max"] = m.group(2)
+        num_matches = list(re.finditer(r"(\d+)\s+(?:lymph\s+)?node", t))
+        if num_matches:
+            data["s14_num"] = num_matches[-1].group(1) 
 
+        node_idx = t.rfind("node")
+        if node_idx != -1:
+            node_context = t[node_idx:]
+            # ✅ แก้จุดนี้: หาตัวเลขทศนิยมทุกตัวที่อยู่หลังคำว่า node (ไม่ต้องมี cm ตามหลังก็ได้)
+            sizes = re.findall(r"\b(\d+(?:\.\d+)?)\b", node_context)
+            if len(sizes) >= 2:
+                sizes_float = [float(s) for s in sizes]
+                data["s14_min"] = str(min(sizes_float))
+                data["s14_max"] = str(max(sizes_float))
+    elif "not found" in t or "no lymph" in t:
+        data["s14_check"] = False
+
+    # ==========================================
+    # 10. Sections Mapping
+    # ==========================================
     section_map = {
         "= nipple": ["nipple"], 
         "= mass": ["mass"], 
@@ -326,9 +323,6 @@ def extract_data_15_sections(text):
     }
     data["sections"] = {}
     
-    if "representative sections are submitted as" in t and not data["sections"]:
-        data["_low_confidence"].extend(["sec_nipple", "sec_mass", "sec_old_biopsy", "sec_deep_margin"])
-
     for anchor, keywords in section_map.items():
         found = False
         for kw in keywords:
@@ -343,19 +337,9 @@ def extract_data_15_sections(text):
                     clean_code = clean_code.rstrip(".,")
                     formatted_code = format_section_code(clean_code)
                     
-                    extra_text = ""
-                    if "nearest resected" in anchor or "deep resected" in anchor:
-                        suffix_match = re.search(rf"{kw}\s*(margin)?\s+(with\s+[^,.]+)", t)
-                        if suffix_match:
-                            extra_text = suffix_match.group(2).strip()
-                        else:
-                            suffix_match = re.search(rf"{raw_code}.*?{kw}\s*(margin)?\s+(with\s+[^,.]+)", t)
-                            if suffix_match:
-                                extra_text = suffix_match.group(2).strip()
-
                     data["sections"][anchor] = {
                         "code": formatted_code,
-                        "extra": extra_text
+                        "extra": ""
                     }
                     found = True
                     break
@@ -396,40 +380,26 @@ def enhance_extraction_with_nlp(text, data):
                     
     return data
 
-# =========================================================
-# --- ฟังก์ชัน: ตรวจสอบความมั่นใจและเตือนจุดผิดพลาด ---
-# =========================================================
 def generate_confidence_flags(extracted_data):
-    """
-    ตรวจสอบข้อมูลที่สกัดมาได้ หากพบว่าน่าจะผิดพลาด ขาดหาย หรือ Regex หาไม่เจอ 
-    ให้คืนค่า True เพื่อส่งไปแจ้งเตือนบนหน้าเว็บ (ไฮไลต์สีเหลือง)
-    """
     flags = {}
-    
-    # 1. เช็ค Surgical Number (ถ้าหาไม่เจอ)
     if not extracted_data.get("s0_surgical_no") or extracted_data.get("s0_surgical_no").strip() == "":
         flags["s0_surgical_no"] = True
 
-    # 2. เช็คขนาดชิ้นเนื้อ (ถ้าหาไม่เจอ ขาดบางมิติ หรือไม่มีตัวเลขเลย)
     s3_dims = extracted_data.get("s3_dims", [])
     if not s3_dims or len(s3_dims) < 3 or not any(char.isdigit() for char in str(s3_dims)):
         flags["s3_dims"] = True
 
-    # 3. เช็คขนาดก้อนเนื้อ (ถ้าพบว่าระบุก้อนเนื้อ แต่ดันลืมพูดขนาด หรือ AI ฟังไม่ออก)
     has_mass = extracted_data.get("s10_infiltrative") or extracted_data.get("s10_well")
     if has_mass:
         inf_dims = extracted_data.get("s10_inf_dims", [])
         well_dims = extracted_data.get("s10_well_dims", [])
-        
         if extracted_data.get("s10_infiltrative") and (not inf_dims or len(inf_dims) < 3):
             flags["mass_dimensions"] = True
-            
         if extracted_data.get("s10_well") and (not well_dims or len(well_dims) < 3):
             flags["mass_dimensions"] = True
 
     return flags
 
-# --- Drawing Functions ---
 RED = (1, 0, 0)
 BLUE = (0, 0, 1)
 
@@ -441,11 +411,9 @@ def draw_tick(page, anchor_text, offset_x=-15, offset_y=5, search_instance=0):
     
     rect = hits[search_instance]
     start_pt = fitz.Point(rect.x0 + offset_x + 2, rect.y1 - offset_y)
-    
     shape = page.new_shape()
     bottom_pt = fitz.Point(start_pt.x + 3, start_pt.y + 4)
     end_pt = fitz.Point(start_pt.x + 8, start_pt.y - 6)
-    
     shape.draw_line(start_pt, bottom_pt)
     shape.draw_line(bottom_pt, end_pt)
     shape.finish(color=RED, width=1.5) 
@@ -456,7 +424,7 @@ def draw_circle(page, target_word, context_anchor=None):
     if context_anchor:
         ctx_hits = page.search_for(context_anchor)
         if not ctx_hits:
-              ctx_hits = page.search_for(context_anchor.replace("(", "( "))
+             ctx_hits = page.search_for(context_anchor.replace("(", "( "))
         if ctx_hits:
             r = ctx_hits[0]
             search_rect = fitz.Rect(0, r.y0 - 2, page.rect.width, r.y1 + 10)
@@ -464,7 +432,6 @@ def draw_circle(page, target_word, context_anchor=None):
     if not hits: return
     best_hit = hits[0]
     rect = best_hit
-
     shape = page.new_shape()
     padding_x = 2
     padding_y = 1
@@ -494,7 +461,6 @@ def write_spaced_dims(page, anchor_text, dims_list, start_offset=45, gap=40, ins
     rect = hits[instance]
     current_x = rect.x1 + start_offset
     y = rect.y1 + y_offset
-    
     for val in dims_list:
         page.insert_text(fitz.Point(current_x, y), str(val), fontsize=10, fontname="helv", color=BLUE)
         current_x += gap
@@ -508,7 +474,7 @@ def process_pdf_15_sections(template_path, output_path, data):
     doc = fitz.open(template_path)
     page = doc[0]
 
-    if data.get("s0_surgical_no"): write_text(page, "Surgical Number S", data["s0_surgical_no"], offset_x=90)
+    if data.get("s0_surgical_no"): write_text(page, "Surgical Number S", data["s0_surgical_no"].replace("S-", ""), offset_x=90)
     if data.get("s1_side"): draw_circle(page, data["s1_side"], context_anchor="Received in formalin")
     if data.get("s2_proc") == "modified": draw_tick(page, "modified radical mastectomy")
     elif data.get("s2_proc") == "simple": draw_tick(page, "simple mastectomy")
@@ -549,11 +515,8 @@ def process_pdf_15_sections(template_path, output_path, data):
                 box_rect = box_hits[-1]
                 center = fitz.Point((box_rect.x0 + box_rect.x1)/2, (box_rect.y0 + box_rect.y1)/2)
                 shape = page.new_shape()
-                p1 = fitz.Point(center.x - 4, center.y - 2)
-                p2 = fitz.Point(center.x, center.y + 4)
-                p3 = fitz.Point(center.x + 5, center.y - 6)
-                shape.draw_line(p1, p2)
-                shape.draw_line(p2, p3)
+                shape.draw_line(fitz.Point(center.x - 4, center.y - 2), fitz.Point(center.x, center.y + 4))
+                shape.draw_line(fitz.Point(center.x, center.y + 4), fitz.Point(center.x + 5, center.y - 6))
                 shape.finish(color=RED, width=1.5)
                 shape.commit()
             else: draw_tick(page, "appears normal", offset_x=-20)
@@ -625,32 +588,26 @@ def process_pdf_15_sections(template_path, output_path, data):
         anchor_hits = page.search_for("in ( upper")
         if not anchor_hits:
              anchor_hits = [r for r in page.search_for("in (") if page.search_for("upper", clip=fitz.Rect(r.x1, r.y0-5, page.rect.width, r.y1+5))]
-        
         box_rect = None
         if anchor_hits:
             anchor = anchor_hits[0]
             clip_left = fitz.Rect(0, anchor.y0 - 2, anchor.x0, anchor.y1 + 2)
             box_hits = page.search_for("☐", clip=clip_left)
-            
             if box_hits: box_rect = box_hits[-1]
             else: box_rect = fitz.Rect(anchor.x0 - 18, anchor.y0, anchor.x0 - 8, anchor.y1)
-        
         if box_rect:
             center = fitz.Point((box_rect.x0 + box_rect.x1)/2, (box_rect.y0 + box_rect.y1)/2)
             shape = page.new_shape()
-            p1 = fitz.Point(center.x - 4, center.y - 2)
-            p2 = fitz.Point(center.x, center.y + 4)
-            p3 = fitz.Point(center.x + 5, center.y - 6)
-            shape.draw_line(p1, p2)
-            shape.draw_line(p2, p3)
+            shape.draw_line(fitz.Point(center.x - 4, center.y - 2), fitz.Point(center.x, center.y + 4))
+            shape.draw_line(fitz.Point(center.x, center.y + 4), fitz.Point(center.x + 5, center.y - 6))
             shape.finish(color=RED, width=1.5)
             shape.commit()
-            
             if data.get("s10_5_quadrant_vals"):
                 for q in data["s10_5_quadrant_vals"]:
-                     q_pad_x = 5
-                     if q in ["inner", "outer"]: q_pad_x = 4
-                     circle_multiline(page, [q], context_anchor="in ( upper", padding_x=q_pad_x, padding_y=4, shift_x=0, shift_y=0)
+                    for word in q.split(" "):
+                         q_pad_x = 5
+                         if word in ["inner", "outer"]: q_pad_x = 4
+                         circle_multiline(page, [word], context_anchor="in ( upper", padding_x=q_pad_x, padding_y=4, shift_x=0, shift_y=0)
 
     if data.get("s10_5_other"):
          anchor_hits = page.search_for("in (")
@@ -658,14 +615,11 @@ def process_pdf_15_sections(template_path, output_path, data):
              anchor = anchor_hits[0]
              line_rect = fitz.Rect(anchor.x1, anchor.y0 - 5, page.rect.width, anchor.y1 + 5)
              q_hits = page.search_for("quadrant", clip=line_rect)
-             
              if q_hits:
                  q_rect = q_hits[0]
                  right_clip = fitz.Rect(q_rect.x1, q_rect.y0 - 5, page.rect.width, q_rect.y1 + 5)
                  box_hits = page.search_for("☐", clip=right_clip)
-                 
                  target_box = box_hits[0] if box_hits else fitz.Rect(q_rect.x1 + 35, q_rect.y0, q_rect.x1 + 45, q_rect.y1)
-                 
                  if target_box:
                     center = fitz.Point((target_box.x0 + target_box.x1)/2, (target_box.y0 + target_box.y1)/2)
                     shape = page.new_shape()
@@ -753,10 +707,6 @@ def process_pdf_15_sections(template_path, output_path, data):
     doc.close()
 
 
-# =========================================================
-# --- Routes For Auth & History ---
-# =========================================================
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -839,14 +789,9 @@ def load_history(history_id):
         flash("Error loading form data.", "danger")
         return redirect(url_for('history'))
         
-    flags = generate_confidence_flags(data) # Calculate yellow flags for loaded history
+    flags = generate_confidence_flags(data)
     flash("History loaded successfully.", "success")
     return render_template("index.html", data=data, flags=flags, transcription="[Loaded from History]")
-
-
-# =========================================================
-# --- Main Application Routes ---
-# =========================================================
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -855,7 +800,6 @@ def index():
         
         if request.form.get('transcription_text'):
             transcription = request.form.get('transcription_text')
-            print(f"Received Direct Transcription: {transcription}")
 
         audio_file = request.files.get('audio_file')
         if audio_file and audio_file.filename != '':
@@ -863,18 +807,17 @@ def index():
             filename = secure_filename(audio_file.filename)
             audio_path = UPLOAD_DIR / filename 
             audio_file.save(audio_path)
-            print(f"Audio saved to {audio_path}")
 
             try:
                 import threading
                 if not hasattr(app, "model_lock"):
                      app.model_lock = threading.Lock()
                      
-                # พจนานุกรมคำศัพท์สำหรับการใบ้คำให้ Whisper ช่วยลด WER ได้ 0-5%
                 pathology_prompt = (
                     "Received in formalin. Modified radical mastectomy specimen. "
                     "Simple mastectomy. Skin ellipse. The nipple is everted, inverted, shows ulceration. "
                     "Infiltrative firm yellow-white mass. Well-defined firm white mass with slit-like appearance. "
+                    "Poorly circumscribed yellow-white lesion. "
                     "Previous surgical cavity with adjacent fibrous tissue. Residual mass. "
                     "Beneath the nipple, beneath the scar, subareola. "
                     "Upper inner quadrant, lower outer quadrant. "
@@ -891,7 +834,6 @@ def index():
                     ) 
                 transcription = transcription_result['text']
                 transcription = normalize_text(transcription) 
-                print(f"Transcription from Audio: {transcription}")
             except Exception as e:
                 print(f"Error during transcription: {e}")
                 transcription = "Error during transcription"
@@ -917,7 +859,7 @@ def generate_pdf():
     for field in ["s0_surgical_no", "s1_side", "s2_proc", "s2_other_text", "s7_len", 
                   "s9_ulcer_text", "s10_grammar", "s10_5_other",
                   "s11_deep", "s11_superior", "s11_inferior", "s11_medial", "s11_lateral", "s11_skin", "s11_margin_right",
-                  "s12_val_left", "s12_val_right", "s13_type", "s13_text", "s14_min", "s14_max",
+                  "s12_val_left", "s12_val_right", "s13_type", "s13_text", "s14_min", "s14_max", "s14_num",
                   "footer_prosecutor", "footer_date"]:
         if form_data.get(field):
             data[field] = form_data.get(field)
@@ -1000,7 +942,6 @@ def generate_pdf():
         
     flags = generate_confidence_flags(data)
     
-    # --- บันทึกลง Database หากมีการล็อกอิน ---
     if current_user.is_authenticated:
         s_no = data.get("s0_surgical_no", "Unknown")
         history_record = FormHistory(
@@ -1022,4 +963,4 @@ def download_file(filename):
     return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=7861)
+    app.run(host="0.0.0.0", port=7860)

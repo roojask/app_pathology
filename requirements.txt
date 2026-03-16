@@ -1,9 +1,8 @@
-
-Flask==3.0.3
-pymupdf==1.24.10
-openai-whisper==20250625
-torch           # (optional, if you want GPU/CPU acceleration for whisper)
+Flask
+Flask-SQLAlchemy
+Flask-Login
+pymupdf
+openai-whisper
 pdf2docx
-jiwer==3.0.3
 spacy
-en_core_web_sm
+jiwer
