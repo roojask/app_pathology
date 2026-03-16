@@ -27,7 +27,6 @@ output/
 .idea/
 
 # Models and Large Binaries
-benchmarks_and_tools/
 vosk-model/
 ffmpeg-8.0.1/
 ffmpeg.exe
